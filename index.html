@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>웨딩밴드 투어 가이드 — 서울</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --bg:#F2EAE1;
+    --surface:#FFFFFF;
+    --surface-soft:#F8F2EA;
+    --ink:#2B2620;
+    --ink-soft:#8C8377;
+    --ink-faint:#C1B6A7;
+    --accent:#9C4B37;
+    --accent-soft:#EDDCD1;
+    --line:#E9E0D3;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Pretendard',-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Pretendard',-apple-system,sans-serif;letter-spacing:-.01em;}
+  .wrap{max-width:640px;margin:0 auto;padding:20px 16px 130px;}
+
+  .hero{background:var(--surface);border-radius:28px;padding:36px 28px 30px;}
+  .hero-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
+  .eyebrow{font-size:10.5px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;font-weight:600;}
+  .admin-link{font-size:10.5px;letter-spacing:.1em;color:var(--ink-faint);cursor:pointer;font-weight:600;padding:6px 12px;border:1px solid var(--line);border-radius:999px;}
+  .admin-link.on{color:var(--accent);border-color:var(--accent);}
+  .hero h1{font-size:27px;line-height:1.4;margin:0 0 12px;font-weight:600;}
+  .hero p{margin:0;color:var(--ink-soft);font-size:13.5px;line-height:1.6;}
+  .mode-banner{margin-top:18px;padding:10px 14px;background:var(--accent);color:#fff;font-size:11.5px;font-weight:600;letter-spacing:.02em;border-radius:12px;display:none;}
+  .mode-banner.show{display:block;}
+
+  .tabs{display:flex;gap:8px;padding:22px 4px 0;overflow-x:auto;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{flex-shrink:0;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:500;background:var(--surface);cursor:pointer;color:var(--ink-soft);white-space:nowrap;border:1px solid transparent;}
+  .tab .n{opacity:.6;margin-left:2px;font-variant-numeric:tabular-nums;}
+  .tab.active{background:var(--ink);color:#fff;}
+  .tab-add{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--surface);color:var(--ink-faint);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+  .tab-add:hover{color:var(--accent);}
+
+  .inline-form{margin:14px 4px 0;padding:20px;border-radius:20px;background:var(--surface);display:none;}
+  .inline-form.show{display:block;}
+  .inline-form .field-label{font-size:10.5px;letter-spacing:.1em;color:var(--ink-faint);margin-bottom:6px;text-transform:uppercase;font-weight:600;}
+  .inline-form input{width:100%;background:var(--surface-soft);border:none;border-radius:10px;color:var(--ink);font-size:14px;padding:11px 12px;font-family:inherit;margin-bottom:12px;}
+  .inline-form input:focus{outline:2px solid var(--accent-soft);}
+  .form-actions{display:flex;gap:8px;justify-content:flex-end;}
+  .btn-ghost{background:transparent;border:none;color:var(--ink-soft);padding:10px 16px;border-radius:999px;font-size:12.5px;cursor:pointer;font-family:inherit;font-weight:500;}
+  .btn-ink{background:var(--ink);border:none;color:#fff;padding:10px 18px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .btn-ink:disabled{opacity:.5;cursor:default;}
+
+  .price-guide{margin:14px 4px 0;padding:16px 18px;border-radius:18px;font-size:12px;color:var(--ink-soft);line-height:1.75;background:var(--accent-soft);}
+  .price-guide b{color:var(--accent);font-weight:600;}
+
+  .add-shop-link{margin:14px 4px 0;display:none;align-items:center;justify-content:center;gap:7px;font-size:12.5px;color:var(--ink);cursor:pointer;font-weight:600;padding:12px;border-radius:999px;border:1px dashed var(--ink-faint);}
+  .add-shop-link.show{display:flex;}
+
+  .list{padding:16px 4px 0;display:flex;flex-direction:column;gap:12px;}
+  .loading-note{padding:26px;text-align:center;font-size:12.5px;color:var(--ink-faint);}
+  .card{background:var(--surface);border-radius:20px;padding:16px;position:relative;}
+  .card.selected{background:var(--accent-soft);}
+  .card-top{display:flex;gap:14px;align-items:center;cursor:pointer;}
+  .logo{width:48px;height:48px;border-radius:50%;background:var(--surface-soft);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--ink-soft);font-size:16px;flex-shrink:0;overflow:hidden;}
+  .logo img{width:100%;height:100%;object-fit:cover;}
+  .card-info{flex:1;min-width:0;}
+  .card-info h3{margin:0;font-size:15.5px;font-weight:600;color:var(--ink);}
+  .tags-inline{font-size:11px;color:var(--accent);margin-top:3px;font-weight:500;}
+  .addr{font-size:11.5px;color:var(--ink-faint);margin-top:4px;}
+  .name-unsure{font-size:10px;color:var(--accent);margin-left:5px;font-weight:500;}
+  .check{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--ink-faint);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;}
+  .card.selected .check{background:var(--ink);border-color:var(--ink);}
+  .del-btn{position:absolute;top:14px;right:14px;width:24px;height:24px;border-radius:50%;border:none;background:var(--surface-soft);color:var(--ink-faint);font-size:14px;cursor:pointer;display:none;}
+  .del-btn.show{display:block;}
+  .del-btn:hover{color:var(--accent);}
+
+  .card-detail{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);margin-left:62px;}
+  .card.open .card-detail{display:block;}
+  .field-label{font-size:10.5px;letter-spacing:.1em;color:var(--ink-faint);margin-bottom:6px;text-transform:uppercase;font-weight:600;}
+  .price-input{width:100%;border:none;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;background:var(--surface-soft);color:var(--ink);margin-bottom:14px;}
+  .price-input:focus{outline:2px solid var(--accent-soft);}
+  .readonly-text{font-size:13px;color:var(--ink-soft);margin-bottom:14px;line-height:1.6;}
+  .imgrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;}
+  .imgslot{width:60px;height:60px;flex-shrink:0;border-radius:12px;background:var(--surface-soft);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-faint);cursor:pointer;overflow:hidden;position:relative;}
+  .imgslot img{width:100%;height:100%;object-fit:cover;}
+  .imgslot input{display:none;}
+  .imgslot.uploading{opacity:.4;}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+  .chip{font-size:11.5px;padding:7px 13px;border-radius:999px;background:var(--surface-soft);color:var(--ink-soft);cursor:pointer;font-family:inherit;border:none;font-weight:500;}
+  .chip.on{background:var(--ink);color:#fff;}
+  .mini-btn{font-size:11px;padding:9px 14px;border-radius:999px;border:none;background:var(--surface-soft);color:var(--ink-soft);cursor:pointer;font-family:inherit;font-weight:500;}
+  .mini-btn.locate{color:var(--accent);background:var(--accent-soft);}
+  .mini-btn.save-btn{color:#fff;background:var(--ink);}
+  .mini-btn.save-btn.saved{background:var(--accent);}
+  .locate-hint{font-size:11px;color:var(--accent);margin-top:8px;display:none;}
+  .locate-hint.show{display:block;}
+
+  .section-title{padding:36px 4px 4px;}
+  .section-title h2{font-size:19px;margin:0 0 5px;font-weight:600;}
+  .section-title p{margin:0;font-size:12px;color:var(--ink-faint);}
+
+  #map{height:260px;margin:14px 4px 0;border-radius:20px;overflow:hidden;}
+  .empty-note{margin:14px 4px 0;padding:26px;text-align:center;font-size:12.5px;color:var(--ink-faint);border-radius:20px;background:var(--surface);}
+
+  .cluster-route{margin:14px 4px 0;background:var(--surface);border-radius:20px;padding:20px;}
+  .cluster-route h3{margin:0 0 3px;font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:7px;}
+  .cluster-route .total{font-size:11px;color:var(--ink-faint);margin-bottom:18px;font-variant-numeric:tabular-nums;}
+  .band{position:relative;padding-left:4px;}
+  .stop{display:flex;gap:14px;position:relative;padding-bottom:22px;}
+  .stop:last-child{padding-bottom:0;}
+  .stop .num{width:24px;height:24px;border-radius:50%;background:var(--surface-soft);font-weight:600;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:2;}
+  .stop::before{content:"";position:absolute;left:12px;top:24px;bottom:-22px;width:1px;background:var(--line);}
+  .stop:last-child::before{display:none;}
+  .stop-body{padding-top:2px;}
+  .stop-body .name{font-weight:600;font-size:13.5px;}
+  .stop-body .hop{font-size:11px;color:var(--accent);margin-top:2px;font-variant-numeric:tabular-nums;}
+  .reorder{display:flex;gap:4px;margin-left:auto;}
+  .reorder button{width:22px;height:22px;border:none;background:var(--surface-soft);border-radius:7px;font-size:10px;cursor:pointer;color:var(--ink-faint);}
+  .cross-note{margin-top:14px;padding:13px 15px;background:var(--surface-soft);border-radius:14px;font-size:11px;color:var(--ink-soft);line-height:1.7;}
+
+  .floatbar{position:fixed;bottom:16px;left:16px;right:16px;background:var(--ink);border-radius:999px;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;z-index:30;max-width:608px;margin:0 auto;box-shadow:0 8px 24px rgba(43,38,32,.25);}
+  .floatbar .count{font-size:12.5px;color:rgba(255,255,255,.7);}
+  .floatbar .count span{color:#fff;font-weight:600;}
+  .floatbar button{background:#fff;color:var(--ink);border:none;padding:10px 18px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(43,38,32,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:24px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--bg);border-radius:24px;max-width:320px;width:100%;padding:28px;}
+  .modal-box h3{margin:0 0 6px;font-size:16px;font-weight:600;}
+  .modal-box p{margin:0 0 18px;font-size:12px;color:var(--ink-soft);line-height:1.6;}
+  .modal-box input{width:100%;background:var(--surface);border:none;border-radius:12px;padding:12px;font-size:14px;font-family:inherit;margin-bottom:10px;text-align:center;letter-spacing:.1em;}
+  .modal-box input:focus{outline:2px solid var(--accent-soft);}
+  .modal-error{font-size:11.5px;color:var(--accent);margin-bottom:10px;display:none;}
+  .modal-error.show{display:block;}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+  .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:12px;z-index:200;display:none;}
+  .toast.show{display:block;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-top">
+      <div class="eyebrow">Seoul · Wedding Band Guide</div>
+      <div class="admin-link" id="admin-link" onclick="toggleAdmin()">관리자</div>
+    </div>
+    <h1>웨딩밴드 투어 가이드</h1>
+    <p>종로, 청담, 홍대 등의 웨딩반지 샵을 둘러보고 지도 위치와 최적 동선을 확인해보세요.</p>
+    <div class="mode-banner" id="mode-banner">관리자 모드 — 여기서 수정한 내용은 이 링크를 보는 모든 사람에게 공개돼요.</div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="inline-form" id="area-form">
+    <div class="field-label">새 지역 이름</div>
+    <input type="text" id="area-name-input" placeholder="예: 강남, 성수 ...">
+    <div class="form-actions">
+      <button class="btn-ghost" onclick="closeAreaForm()">취소</button>
+      <button class="btn-ink" onclick="submitArea()">추가</button>
+    </div>
+  </div>
+
+  <div class="price-guide" id="price-guide"></div>
+
+  <div class="add-shop-link" id="add-shop-link" onclick="openShopForm()">＋ 새로운 샵 추가</div>
+
+  <div class="inline-form" id="shop-form">
+    <div class="field-label">샵 이름</div>
+    <input type="text" id="shop-name-input" placeholder="예: 오헤르츠 주얼리">
+    <div class="field-label">주소 (선택)</div>
+    <input type="text" id="shop-addr-input" placeholder="대략적인 위치나 주소">
+    <div class="form-actions">
+      <button class="btn-ghost" onclick="closeShopForm()">취소</button>
+      <button class="btn-ink" onclick="submitShop()">추가</button>
+    </div>
+  </div>
+
+  <div class="list" id="list"><div class="loading-note">불러오는 중...</div></div>
+
+  <div class="section-title">
+    <h2>지도로 보기</h2>
+    <p>선택한 샵들의 위치예요.</p>
+  </div>
+  <div id="map"></div>
+  <div class="empty-note" id="map-empty">아직 선택한 샵이 없어요. 위 목록에서 둘러볼 곳을 골라보세요.</div>
+
+  <div class="section-title" id="route-title" style="display:none;">
+    <h2>오늘의 동선</h2>
+    <p>지역 안에서 가장 효율적인 순서로 정렬했어요. 화살표로 순서를 바꿀 수 있어요.</p>
+  </div>
+  <div id="routes"></div>
+</div>
+
+<div class="floatbar">
+  <div class="count"><span id="sel-count">0</span>곳 선택됨</div>
+  <button onclick="document.getElementById('route-title').scrollIntoView({behavior:'smooth'})">동선 보기</button>
+</div>
+
+<div class="modal-overlay" id="admin-modal">
+  <div class="modal-box">
+    <h3>관리자 모드</h3>
+    <p>코드를 입력하면 샵 정보를 수정할 수 있어요.</p>
+    <input type="password" id="admin-code-input" placeholder="코드" inputmode="numeric">
+    <div class="modal-error" id="admin-error">코드가 맞지 않아요.</div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeAdminModal()">취소</button>
+      <button class="btn-ink" onclick="submitAdminCode()">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ADMIN_CODE = '0709';
+const SUPABASE_URL = 'https://cybrpntkywehiontyjsk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5YnJwbnRreXdlaGlvbnR5anNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTg4MDYsImV4cCI6MjA5OTE3NDgwNn0._fCurd5HBRgNDvK4_NS4btyzL6zDajVumPW_ISz8tPY';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const IMAGE_BUCKET = 'brand-images';
+const TAG_OPTIONS = ['실버','14K','18K','24K','큐빅','모사나이트','지르코니아','랩다이아몬드','천연다이아'];
+const AREA_GUIDE = {
+  jongno: '종로: 합리적인 가격대, 예물상가 밀집, 커스텀 세공 강점',
+  cheongdam: '청담: 부티크 브랜드 위주, 상대적으로 프리미엄 가격대, 세련된 디자인',
+  hongdae: '홍대: 핸드메이드 공방 체험형, 캐주얼한 분위기와 가격대'
+};
+
+let isAdmin = false;
+let areas = [];
+let brands = [];
+let viewerState = { selected:{}, manualOrder:{} };
+let activeArea = 'jongno';
+let map, markersLayer;
+let placingId = null;
+
+function loadViewerState(){
+  try{ const raw = localStorage.getItem('wb-viewer-state'); if(raw) viewerState = Object.assign({selected:{},manualOrder:{}}, JSON.parse(raw)); }catch(e){}
+}
+function saveViewerState(){
+  try{ localStorage.setItem('wb-viewer-state', JSON.stringify(viewerState)); }catch(e){}
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+async function loadData(){
+  const { data: areaData, error: areaErr } = await sb.from('areas').select('*').order('sort_order');
+  if(areaErr){ showToast('지역 정보를 불러오지 못했어요'); console.error(areaErr); }
+  areas = areaData || [];
+
+  const { data: brandData, error: brandErr } = await sb
+    .from('brands')
+    .select('*, brand_admin(*), brand_images(id, url, sort_order)')
+    .eq('removed', false)
+    .order('created_at');
+  if(brandErr){ showToast('샵 정보를 불러오지 못했어요'); console.error(brandErr); }
+
+  brands = (brandData||[]).map(b=>{
+    const ba = Array.isArray(b.brand_admin) ? b.brand_admin[0] : b.brand_admin;
+    const imgs = (b.brand_images||[]).slice().sort((x,y)=>(x.sort_order||0)-(y.sort_order||0));
+    return {
+      id:b.id, name:b.name, area:b.area_id, address:b.address,
+      lat:b.lat, lng:b.lng, nameUnsure:b.name_unsure, publicPrice:b.public_price,
+      price: ba?.price || '', note: ba?.note || '', materials: ba?.materials || [], logo: ba?.logo_url || null,
+      images: imgs
+    };
+  });
+}
+
+function toggleAdmin(){
+  if(isAdmin){
+    isAdmin = false;
+    document.getElementById('admin-link').classList.remove('on');
+    document.getElementById('mode-banner').classList.remove('show');
+    document.getElementById('add-shop-link').classList.remove('show');
+    renderAll();
+  } else {
+    openAdminModal();
+  }
+}
+function openAdminModal(){
+  document.getElementById('admin-error').classList.remove('show');
+  document.getElementById('admin-code-input').value = '';
+  document.getElementById('admin-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('admin-code-input').focus(), 50);
+}
+function closeAdminModal(){ document.getElementById('admin-modal').classList.remove('show'); }
+function submitAdminCode(){
+  const code = document.getElementById('admin-code-input').value;
+  if(code === ADMIN_CODE){
+    isAdmin = true;
+    closeAdminModal();
+    document.getElementById('admin-link').classList.add('on');
+    document.getElementById('mode-banner').classList.add('show');
+    document.getElementById('add-shop-link').classList.add('show');
+    renderAll();
+  } else {
+    document.getElementById('admin-error').classList.add('show');
+  }
+}
+document.getElementById('admin-code-input')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') submitAdminCode(); });
+
+function areaLabel(id){ const a=areas.find(x=>x.id===id); return a?a.label:id; }
+function getCoords(b){ if(b.lat!=null && b.lng!=null) return {lat:b.lat, lng:b.lng}; return null; }
+function isConfirmed(b){ return !!getCoords(b); }
+function haversine(a,b){
+  const R=6371, toRad=d=>d*Math.PI/180;
+  const dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng);
+  const x=Math.sin(dLat/2)**2 + Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+function walkTime(km){ return Math.round(km/4.3*60); }
+function resizeImage(file, maxW){
+  return new Promise((resolve)=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const scale = Math.min(1, maxW/img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width*scale; canvas.height = img.height*scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',0.72));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function dataURLtoBlob(dataUrl){
+  const [meta, b64] = dataUrl.split(',');
+  const mime = meta.match(/:(.*?);/)[1];
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], {type:mime});
+}
+async function uploadToStorage(path, dataUrl){
+  const blob = dataURLtoBlob(dataUrl);
+  const { error } = await sb.storage.from(IMAGE_BUCKET).upload(path, blob, {upsert:true, contentType:'image/jpeg'});
+  if(error){ showToast('이미지 업로드에 실패했어요'); console.error(error); return null; }
+  const { data } = sb.storage.from(IMAGE_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+function slugify(str){ return 'a_' + str.trim().replace(/\s+/g,'_').replace(/[^\w\uac00-\ud7a3_]/g,'') + '_' + Date.now()%10000; }
+function initial(name){ return name.trim().charAt(0); }
+
+function renderTabs(){
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  areas.forEach(a=>{
+    const div = document.createElement('div');
+    div.className = 'tab' + (a.id===activeArea ? ' active':'');
+    const c = brands.filter(b=>b.area===a.id && viewerState.selected[b.id]).length;
+    div.innerHTML = `${a.label} ${c>0?`<span class="n">(${c})</span>`:''}`;
+    div.onclick = ()=>{ activeArea = a.id; closeAreaForm(); closeShopForm(); renderAll(); };
+    tabs.appendChild(div);
+  });
+  if(isAdmin){
+    const addBtn = document.createElement('div');
+    addBtn.className = 'tab-add';
+    addBtn.textContent = '＋';
+    addBtn.onclick = openAreaForm;
+    tabs.appendChild(addBtn);
+  }
+}
+function openAreaForm(){ document.getElementById('area-form').classList.add('show'); document.getElementById('area-name-input').focus(); }
+function closeAreaForm(){ document.getElementById('area-form').classList.remove('show'); document.getElementById('area-name-input').value=''; }
+async function submitArea(){
+  const val = document.getElementById('area-name-input').value.trim();
+  if(!val) return;
+  const id = slugify(val);
+  const { error } = await sb.from('areas').insert({id, label:val, sort_order: areas.length+1});
+  if(error){ showToast('지역 추가에 실패했어요'); console.error(error); return; }
+  await loadData();
+  activeArea = id;
+  closeAreaForm();
+  renderAll();
+}
+function openShopForm(){ document.getElementById('shop-form').classList.add('show'); document.getElementById('shop-name-input').focus(); }
+function closeShopForm(){ document.getElementById('shop-form').classList.remove('show'); document.getElementById('shop-name-input').value=''; document.getElementById('shop-addr-input').value=''; }
+async function submitShop(){
+  const name = document.getElementById('shop-name-input').value.trim();
+  const addr = document.getElementById('shop-addr-input').value.trim();
+  if(!name) return;
+  const id = slugify(name);
+  const { error } = await sb.from('brands').insert({id, name, area_id:activeArea, address:addr||null});
+  if(error){ showToast('샵 추가에 실패했어요'); console.error(error); return; }
+  await loadData();
+  closeShopForm();
+  renderAll();
+}
+async function removeBrand(id, ev){
+  ev.stopPropagation();
+  if(!isAdmin) return;
+  const { error } = await sb.from('brands').update({removed:true}).eq('id', id);
+  if(error){ showToast('삭제에 실패했어요'); console.error(error); return; }
+  await loadData();
+  renderAll();
+}
+
+function renderList(){
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  const areaBrands = brands.filter(b=>b.area===activeArea);
+  areaBrands.forEach((b)=>{
+    const sel = !!viewerState.selected[b.id];
+    const confirmed = isConfirmed(b);
+    const card = document.createElement('div');
+    card.className = 'card' + (sel?' selected':'');
+    card.id = 'card-'+b.id;
+    const logoHtml = b.logo ? `<img src="${b.logo}">` : initial(b.name);
+    const materials = b.materials || [];
+
+    let detailHtml = '';
+    if(isAdmin){
+      const chipsHtml = TAG_OPTIONS.map(tag=>`<button type="button" class="chip ${materials.includes(tag)?'on':''}" onclick="toggleMaterial('${b.id}','${tag}', event)">${tag}</button>`).join('');
+      detailHtml = `
+        <div class="field-label">소재 / 스톤 (선택하면 목록에 표시돼요)</div>
+        <div class="chip-row">${chipsHtml}</div>
+        <div class="field-label">로고</div>
+        <div class="imgrow">
+          <label class="imgslot" id="logo-${b.id}">
+            ${b.logo ? `<img src="${b.logo}">` : '+'}
+            <input type="file" accept="image/*" onchange="handleLogo('${b.id}', this)">
+          </label>
+        </div>
+        <div class="field-label">대표 디자인 (참고 이미지, 최대 5장)</div>
+        <div class="imgrow" id="designs-${b.id}"></div>
+        <div class="field-label">확인한 가격대</div>
+        <input class="price-input" id="price-input-${b.id}" placeholder="예: 커플링 2개 합 180만원대" value="${b.price||''}">
+        <div class="field-label">메모</div>
+        <input class="price-input" id="note-input-${b.id}" placeholder="느낀 점, 디자인 이름 등" value="${b.note||''}">
+        <div class="btn-row">
+          <button class="mini-btn locate" onclick="startPlacing('${b.id}')">${confirmed?'지도 위치 수정':'지도에서 위치 지정'}</button>
+          <button class="mini-btn save-btn" id="save-btn-${b.id}" onclick="saveCard('${b.id}', event)">저장</button>
+        </div>
+        <div class="locate-hint" id="hint-${b.id}">아래 지도를 눌러 이 샵의 위치를 지정해주세요.</div>
+        <div class="admin-status" style="margin-top:10px;font-size:10px;color:${confirmed?'var(--ink-faint)':'var(--accent)'};">${confirmed?'✓ 위치 확인됨 (지도에 표시돼요)':'⚠ 위치 미지정 — 지도에 표시되지 않아요'}</div>
+      `;
+    } else {
+      const hasImgs = b.logo || (b.images && b.images.length);
+      detailHtml = `
+        ${hasImgs ? `<div class="field-label">대표 이미지</div><div class="imgrow">${
+          (b.images||[]).map(img=>`<div class="imgslot"><img src="${img.url}"></div>`).join('')
+        }</div>` : ''}
+        <div class="field-label">가격대</div>
+        <div class="readonly-text">${b.price ? b.price : (b.publicPrice ? b.publicPrice+' (공개가)' : '등록된 정보가 없어요')}</div>
+        ${b.note ? `<div class="field-label">메모</div><div class="readonly-text">${b.note}</div>` : ''}
+      `;
+    }
+
+    card.innerHTML = `
+      <button class="del-btn ${isAdmin?'show':''}" onclick="removeBrand('${b.id}', event)">×</button>
+      <div class="card-top" onclick="toggleOpen('${b.id}')">
+        <div class="logo">${logoHtml}</div>
+        <div class="card-info">
+          <h3>${b.name}${b.nameUnsure?'<span class="name-unsure">확인필요</span>':''}</h3>
+          <div class="addr">${b.address || '주소 미확인'}</div>
+          ${materials.length ? `<div class="tags-inline">${materials.join(' · ')}</div>` : ''}
+        </div>
+        ${isAdmin ? '' : `<div class="check" onclick="event.stopPropagation();toggleSelect('${b.id}')">${sel?'✓':''}</div>`}
+      </div>
+      <div class="card-detail">${detailHtml}</div>
+    `;
+    list.appendChild(card);
+    if(isAdmin) renderDesignSlots(b.id);
+  });
+  updateCounts();
+}
+function renderDesignSlots(id){
+  const row = document.getElementById('designs-'+id);
+  if(!row) return;
+  const b = brands.find(x=>x.id===id);
+  const imgs = b.images || [];
+  row.innerHTML = '';
+  for(let i=0;i<5;i++){
+    const slot = document.createElement('label');
+    slot.className = 'imgslot';
+    if(imgs[i]){
+      slot.innerHTML = `<img src="${imgs[i].url}">`;
+      slot.onclick = (e)=>{ e.preventDefault(); removeDesign(id, imgs[i].id); };
+    } else {
+      slot.innerHTML = `+<input type="file" accept="image/*">`;
+      slot.querySelector('input').onchange = function(){ handleDesign(id, i, this, slot); };
+    }
+    row.appendChild(slot);
+  }
+}
+async function ensureBrandAdmin(id){
+  const { error } = await sb.from('brand_admin').upsert({brand_id:id}, {onConflict:'brand_id', ignoreDuplicates:true});
+  if(error) console.error(error);
+}
+async function handleLogo(id, input){
+  if(!input.files[0]) return;
+  const slot = document.getElementById('logo-'+id);
+  slot.classList.add('uploading');
+  const dataUrl = await resizeImage(input.files[0], 200);
+  const path = `logo/${id}-${Date.now()}.jpg`;
+  const url = await uploadToStorage(path, dataUrl);
+  if(url){
+    await ensureBrandAdmin(id);
+    const { error } = await sb.from('brand_admin').update({logo_url:url}).eq('brand_id', id);
+    if(error){ showToast('로고 저장에 실패했어요'); console.error(error); }
+    else { const b = brands.find(x=>x.id===id); b.logo = url; }
+  }
+  slot.classList.remove('uploading');
+  renderList();
+}
+async function handleDesign(id, idx, input, slotEl){
+  if(!input.files[0]) return;
+  slotEl.classList.add('uploading');
+  const dataUrl = await resizeImage(input.files[0], 480);
+  const path = `design/${id}-${idx}-${Date.now()}.jpg`;
+  const url = await uploadToStorage(path, dataUrl);
+  if(url){
+    const { data, error } = await sb.from('brand_images').insert({brand_id:id, url, sort_order:idx}).select().single();
+    if(error){ showToast('이미지 저장에 실패했어요'); console.error(error); }
+    else {
+      const b = brands.find(x=>x.id===id);
+      b.images = b.images || [];
+      b.images.push(data);
+    }
+  }
+  renderDesignSlots(id);
+}
+async function removeDesign(id, imgId){
+  const { error } = await sb.from('brand_images').delete().eq('id', imgId);
+  if(error){ showToast('삭제에 실패했어요'); console.error(error); return; }
+  const b = brands.find(x=>x.id===id);
+  b.images = (b.images||[]).filter(img=>img.id!==imgId);
+  renderDesignSlots(id);
+}
+function toggleOpen(id){ document.getElementById('card-'+id).classList.toggle('open'); }
+function toggleSelect(id){ viewerState.selected[id] = !viewerState.selected[id]; saveViewerState(); renderAll(); }
+async function saveCard(id, ev){
+  ev.stopPropagation();
+  const priceVal = document.getElementById('price-input-'+id).value;
+  const noteVal = document.getElementById('note-input-'+id).value;
+  await ensureBrandAdmin(id);
+  const { error } = await sb.from('brand_admin').update({price:priceVal, note:noteVal}).eq('brand_id', id);
+  const btn = document.getElementById('save-btn-'+id);
+  if(error){ showToast('저장에 실패했어요'); console.error(error); return; }
+  const b = brands.find(x=>x.id===id);
+  b.price = priceVal; b.note = noteVal;
+  const original = btn.textContent;
+  btn.textContent = '저장됨 ✓';
+  btn.classList.add('saved');
+  setTimeout(()=>{ btn.textContent = original; btn.classList.remove('saved'); }, 1500);
+}
+async function toggleMaterial(id, tag, ev){
+  ev.stopPropagation();
+  const b = brands.find(x=>x.id===id);
+  const cur = b.materials || [];
+  const idx = cur.indexOf(tag);
+  const next = idx>-1 ? cur.filter(t=>t!==tag) : [...cur, tag];
+  await ensureBrandAdmin(id);
+  const { error } = await sb.from('brand_admin').update({materials:next}).eq('brand_id', id);
+  if(error){ showToast('저장에 실패했어요'); console.error(error); return; }
+  b.materials = next;
+  renderList();
+}
+function startPlacing(id){
+  placingId = id;
+  document.querySelectorAll('.locate-hint').forEach(h=>h.classList.remove('show'));
+  document.getElementById('hint-'+id).classList.add('show');
+  document.getElementById('map').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function updateCounts(){
+  const total = Object.values(viewerState.selected).filter(Boolean).length;
+  document.getElementById('sel-count').textContent = total;
+}
+function initMap(){
+  map = L.map('map', {zoomControl:true, attributionControl:false}).setView([37.566, 126.978], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {subdomains:['a','b','c']}).addTo(map);
+  markersLayer = L.layerGroup().addTo(map);
+  map.on('click', async (e)=>{
+    if(!placingId || !isAdmin) return;
+    const id = placingId;
+    const { error } = await sb.from('brands').update({lat:e.latlng.lat, lng:e.latlng.lng}).eq('id', id);
+    if(error){ showToast('위치 저장에 실패했어요'); console.error(error); return; }
+    const b = brands.find(x=>x.id===id);
+    b.lat = e.latlng.lat; b.lng = e.latlng.lng;
+    document.getElementById('hint-'+id).classList.remove('show');
+    placingId = null;
+    renderAll();
+  });
+}
+function nearestNeighborRoute(points){
+  if(points.length===0) return [];
+  const remaining = points.slice(1);
+  const route = [points[0]];
+  let current = points[0];
+  while(remaining.length){
+    let bestIdx=0, bestDist=Infinity;
+    remaining.forEach((p,i)=>{ const d = haversine(current,p); if(d<bestDist){bestDist=d;bestIdx=i;} });
+    current = remaining.splice(bestIdx,1)[0];
+    route.push(current);
+  }
+  return route;
+}
+function renderMapAndRoutes(){
+  markersLayer.clearLayers();
+  const selectedBrands = brands.filter(b=>viewerState.selected[b.id]);
+  const withCoords = selectedBrands.map(b=>({b, c:getCoords(b)})).filter(x=>x.c);
+  document.getElementById('map-empty').style.display = selectedBrands.length? 'none':'block';
+  document.getElementById('route-title').style.display = selectedBrands.length? 'block':'none';
+  const bounds = [];
+  withCoords.forEach(({b,c})=>{
+    const icon = L.divIcon({
+      html:`<div style="background:#2B2620;color:#F2EAE1;width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.3);"><span style="transform:rotate(45deg);font-size:9px;">●</span></div>`,
+      className:'', iconSize:[22,22], iconAnchor:[11,22]
+    });
+    L.marker([c.lat,c.lng], {icon}).addTo(markersLayer).bindPopup(`<b>${b.name}</b><br>${areaLabel(b.area)}`);
+    bounds.push([c.lat,c.lng]);
+  });
+  if(bounds.length) map.fitBounds(bounds, {padding:[30,30], maxZoom:15});
+  const routesEl = document.getElementById('routes');
+  routesEl.innerHTML = '';
+  const areasUsed = [...new Set(withCoords.map(x=>x.b.area))];
+  const areaOrder = areas.map(a=>a.id).filter(a=>areasUsed.includes(a));
+  const clusterOrders = {};
+  areaOrder.forEach(area=>{
+    const items = withCoords.filter(x=>x.b.area===area).map(x=>({...x.c, ...x.b}));
+    let ordered = nearestNeighborRoute(items);
+    const manual = viewerState.manualOrder && viewerState.manualOrder[area];
+    if(manual && manual.length === ordered.length && manual.every(id=>ordered.some(o=>o.id===id))){
+      const byId = {}; ordered.forEach(o=>byId[o.id]=o);
+      ordered = manual.map(id=>byId[id]);
+    }
+    clusterOrders[area] = ordered;
+    const box = document.createElement('div');
+    box.className = 'cluster-route';
+    let totalKm = 0;
+    let stopsHtml = '';
+    ordered.forEach((b, i)=>{
+      let hop = '';
+      if(i>0){
+        const d = haversine(ordered[i-1], b);
+        totalKm += d;
+        hop = `<div class="hop">← 도보 약 ${walkTime(d)}분 (${d.toFixed(1)}km)</div>`;
+      }
+      stopsHtml += `
+        <div class="stop">
+          <div class="num">${i+1}</div>
+          <div class="stop-body">
+            <div class="name">${b.name}</div>
+            ${hop}
+          </div>
+          <div class="reorder">
+            ${i>0?`<button onclick="moveStop('${area}',${i},-1)">↑</button>`:''}
+            ${i<ordered.length-1?`<button onclick="moveStop('${area}',${i},1)">↓</button>`:''}
+          </div>
+        </div>`;
+    });
+    box.innerHTML = `
+      <h3>${areaLabel(area)} 동선 · ${ordered.length}곳</h3>
+      <div class="total">총 도보 이동 약 ${walkTime(totalKm)}분 · ${totalKm.toFixed(1)}km</div>
+      <div class="band">${stopsHtml}</div>
+    `;
+    routesEl.appendChild(box);
+  });
+  if(areaOrder.length>1){
+    const note = document.createElement('div');
+    note.className = 'cluster-route';
+    let interHtml = '<h3>지역 간 이동</h3>';
+    for(let i=0;i<areaOrder.length-1;i++){
+      const a1 = clusterOrders[areaOrder[i]][clusterOrders[areaOrder[i]].length-1];
+      const a2 = clusterOrders[areaOrder[i+1]][0];
+      const d = haversine(a1,a2);
+      interHtml += `<div class="cross-note">${areaLabel(areaOrder[i])} → ${areaLabel(areaOrder[i+1])} · 직선거리 약 ${d.toFixed(1)}km, 도보로는 멀어요 — 택시나 지하철 이용을 추천해요. (실제 소요시간은 교통 상황에 따라 달라질 수 있어요)</div>`;
+    }
+    note.innerHTML = interHtml;
+    routesEl.appendChild(note);
+  }
+  window._clusterOrders = clusterOrders;
+}
+function moveStop(area, idx, dir){
+  const order = window._clusterOrders[area];
+  const newIdx = idx+dir;
+  if(newIdx<0 || newIdx>=order.length) return;
+  const brandIds = order.map(b=>b.id);
+  [brandIds[idx], brandIds[newIdx]] = [brandIds[newIdx], brandIds[idx]];
+  viewerState.manualOrder = viewerState.manualOrder || {};
+  viewerState.manualOrder[area] = brandIds;
+  saveViewerState();
+  renderMapAndRoutes();
+}
+function renderAll(){
+  renderTabs();
+  const guide = AREA_GUIDE[activeArea] || `${areaLabel(activeArea)} 지역의 샵들이에요.`;
+  document.getElementById('price-guide').innerHTML = `<b>시세 경향 (참고용)</b> · ${guide}`;
+  renderList();
+  renderMapAndRoutes();
+}
+async function init(){
+  loadViewerState();
+  initMap();
+  await loadData();
+  renderAll();
+}
+init();
+</script>
+</body>
+</html>
