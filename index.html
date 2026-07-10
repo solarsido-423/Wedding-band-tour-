@@ -432,6 +432,12 @@ function renderList(){
           ${b.logo ? `<img src="${b.logo}">` : '+'}
           <input type="file" accept="image/*" onchange="handleLogo('${b.id}', this)">
         </label>
+        <div class="field-label">주소</div>
+        <input class="price-input" id="addr-input-${b.id}" placeholder="예: 서울 종로구 율곡로8길 21-1 1층" value="${b.address||''}">
+        <div class="btn-row" style="margin-bottom:14px;">
+          <button class="mini-btn locate" id="geocode-btn-${b.id}" onclick="geocodeAddress('${b.id}', event)">주소로 위치 찾기</button>
+          <button class="mini-btn locate" onclick="startPlacing('${b.id}')">${confirmed?'지도에서 직접 수정':'지도에서 직접 지정'}</button>
+        </div>
         <div class="field-label">홈페이지 URL</div>
         <input class="price-input" id="website-input-${b.id}" placeholder="https://..." value="${b.websiteUrl||''}">
         <div class="field-label">인스타그램 URL</div>
@@ -441,7 +447,6 @@ function renderList(){
         <div class="field-label">메모</div>
         <input class="price-input" id="note-input-${b.id}" placeholder="느낀 점, 디자인 이름 등" value="${b.note||''}">
         <div class="btn-row">
-          <button class="mini-btn locate" onclick="startPlacing('${b.id}')">${confirmed?'지도 위치 수정':'지도에서 위치 지정'}</button>
           <button class="mini-btn save-btn" id="save-btn-${b.id}" onclick="saveCard('${b.id}', event)">저장</button>
         </div>
         <div class="locate-hint" id="hint-${b.id}">아래 지도를 눌러 이 샵의 위치를 지정해주세요.</div>
@@ -508,12 +513,16 @@ async function saveCard(id, ev){
   const noteVal = document.getElementById('note-input-'+id).value;
   const websiteVal = document.getElementById('website-input-'+id).value.trim();
   const instagramVal = document.getElementById('instagram-input-'+id).value.trim();
+  const addrVal = document.getElementById('addr-input-'+id).value.trim();
   await ensureBrandAdmin(id);
-  const { error } = await sb.from('brand_admin').update({price:priceVal, note:noteVal, website_url:websiteVal||null, instagram_url:instagramVal||null}).eq('brand_id', id);
+  const [{ error }, { error: addrError }] = await Promise.all([
+    sb.from('brand_admin').update({price:priceVal, note:noteVal, website_url:websiteVal||null, instagram_url:instagramVal||null}).eq('brand_id', id),
+    sb.from('brands').update({address:addrVal||null}).eq('id', id)
+  ]);
   const btn = document.getElementById('save-btn-'+id);
-  if(error){ showToast('저장에 실패했어요'); console.error(error); return; }
+  if(error || addrError){ showToast('저장에 실패했어요'); console.error(error||addrError); return; }
   const b = brands.find(x=>x.id===id);
-  b.price = priceVal; b.note = noteVal; b.websiteUrl = websiteVal; b.instagramUrl = instagramVal;
+  b.price = priceVal; b.note = noteVal; b.websiteUrl = websiteVal; b.instagramUrl = instagramVal; b.address = addrVal;
   const original = btn.textContent;
   btn.textContent = '저장됨 ✓';
   btn.classList.add('saved');
@@ -530,6 +539,36 @@ async function toggleMaterial(id, tag, ev){
   if(error){ showToast('저장에 실패했어요'); console.error(error); return; }
   b.materials = next;
   renderList();
+}
+async function geocodeAddress(id, ev){
+  ev.stopPropagation();
+  const input = document.getElementById('addr-input-'+id);
+  const addr = input.value.trim();
+  if(!addr){ showToast('주소를 먼저 입력해주세요'); return; }
+  const btn = document.getElementById('geocode-btn-'+id);
+  const original = btn.textContent;
+  btn.textContent = '찾는 중...';
+  try{
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&q=' + encodeURIComponent(addr);
+    const res = await fetch(url, {headers:{'Accept-Language':'ko'}});
+    const results = await res.json();
+    if(!results.length){
+      showToast('주소를 찾지 못했어요. 조금 더 자세히 입력하거나 지도에서 직접 지정해주세요');
+      btn.textContent = original;
+      return;
+    }
+    const lat = parseFloat(results[0].lat), lng = parseFloat(results[0].lon);
+    const { error } = await sb.from('brands').update({lat, lng, address:addr}).eq('id', id);
+    if(error){ showToast('위치 저장에 실패했어요'); console.error(error); btn.textContent = original; return; }
+    const b = brands.find(x=>x.id===id);
+    b.lat = lat; b.lng = lng; b.address = addr;
+    showToast('위치를 찾았어요');
+    renderAll();
+  }catch(e){
+    console.error(e);
+    showToast('위치 검색 중 문제가 생겼어요');
+    btn.textContent = original;
+  }
 }
 function startPlacing(id){
   placingId = id;
@@ -576,21 +615,11 @@ function renderMapAndRoutes(){
   const withCoords = selectedBrands.map(b=>({b, c:getCoords(b)})).filter(x=>x.c);
   document.getElementById('map-empty').style.display = selectedBrands.length? 'none':'block';
   document.getElementById('route-title').style.display = selectedBrands.length? 'block':'none';
-  const bounds = [];
-  withCoords.forEach(({b,c})=>{
-    const icon = L.divIcon({
-      html:`<div style="background:#2B2620;color:#F2EAE1;width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.3);"><span style="transform:rotate(45deg);font-size:9px;">●</span></div>`,
-      className:'', iconSize:[22,22], iconAnchor:[11,22]
-    });
-    L.marker([c.lat,c.lng], {icon}).addTo(markersLayer).bindPopup(`<b>${b.name}</b><br>${areaLabel(b.area)}`);
-    bounds.push([c.lat,c.lng]);
-  });
-  if(bounds.length) map.fitBounds(bounds, {padding:[30,30], maxZoom:15});
-  const routesEl = document.getElementById('routes');
-  routesEl.innerHTML = '';
+
   const areasUsed = [...new Set(withCoords.map(x=>x.b.area))];
   const areaOrder = areas.map(a=>a.id).filter(a=>areasUsed.includes(a));
   const clusterOrders = {};
+  const orderNumber = {};
   areaOrder.forEach(area=>{
     const items = withCoords.filter(x=>x.b.area===area).map(x=>({...x.c, ...x.b}));
     let ordered = nearestNeighborRoute(items);
@@ -600,6 +629,24 @@ function renderMapAndRoutes(){
       ordered = manual.map(id=>byId[id]);
     }
     clusterOrders[area] = ordered;
+    ordered.forEach((o,i)=>{ orderNumber[o.id] = i+1; });
+  });
+
+  const bounds = [];
+  withCoords.forEach(({b,c})=>{
+    const num = orderNumber[b.id] || '';
+    const icon = L.divIcon({
+      html:`<div style="background:#2B2620;color:#F2EAE1;width:24px;height:24px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.3);"><span style="transform:rotate(45deg);font-size:11px;font-weight:600;">${num}</span></div>`,
+      className:'', iconSize:[24,24], iconAnchor:[12,24]
+    });
+    L.marker([c.lat,c.lng], {icon}).addTo(markersLayer).bindPopup(`<b>${num? num+'. ':''}${b.name}</b><br>${areaLabel(b.area)}`);
+    bounds.push([c.lat,c.lng]);
+  });
+  if(bounds.length) map.fitBounds(bounds, {padding:[30,30], maxZoom:15});
+  const routesEl = document.getElementById('routes');
+  routesEl.innerHTML = '';
+  areaOrder.forEach(area=>{
+    const ordered = clusterOrders[area];
     const box = document.createElement('div');
     box.className = 'cluster-route';
     let totalKm = 0;
