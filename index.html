@@ -86,6 +86,10 @@
   .link-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   .link-btn{font-size:11.5px;padding:9px 14px;border-radius:999px;background:var(--surface-soft);color:var(--ink);text-decoration:none;font-weight:500;display:inline-flex;align-items:center;gap:5px;}
   .link-btn:hover{background:var(--accent-soft);color:var(--accent);}
+  .logo-upload{width:56px;height:56px;border-radius:50%;flex-shrink:0;background:var(--surface-soft);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-faint);cursor:pointer;overflow:hidden;position:relative;margin-bottom:14px;}
+  .logo-upload img{width:100%;height:100%;object-fit:cover;}
+  .logo-upload input{display:none;}
+  .logo-upload.uploading{opacity:.4;}
   .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
   .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
   .chip{font-size:11.5px;padding:7px 13px;border-radius:999px;background:var(--surface-soft);color:var(--ink-soft);cursor:pointer;font-family:inherit;border:none;font-weight:500;}
@@ -218,6 +222,7 @@ const ADMIN_CODE = '0709';
 const SUPABASE_URL = 'https://cybrpntkywehiontyjsk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5YnJwbnRreXdlaGlvbnR5anNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTg4MDYsImV4cCI6MjA5OTE3NDgwNn0._fCurd5HBRgNDvK4_NS4btyzL6zDajVumPW_ISz8tPY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const IMAGE_BUCKET = 'brand-images';
 const TAG_OPTIONS = ['실버','14K','18K','24K','큐빅','모사나이트','지르코니아','랩다이아몬드','천연다이아'];
 const AREA_GUIDE = {
   jongno: '종로: 합리적인 가격대, 예물상가 밀집, 커스텀 세공 강점',
@@ -226,6 +231,7 @@ const AREA_GUIDE = {
 };
 
 let isAdmin = false;
+let openCardId = null;
 let areas = [];
 let brands = [];
 let viewerState = { selected:{}, manualOrder:{} };
@@ -264,7 +270,7 @@ async function loadData(){
       id:b.id, name:b.name, area:b.area_id, address:b.address,
       lat:b.lat, lng:b.lng, nameUnsure:b.name_unsure, publicPrice:b.public_price,
       price: ba?.price || '', note: ba?.note || '', materials: ba?.materials || [],
-      websiteUrl: ba?.website_url || '', instagramUrl: ba?.instagram_url || ''
+      websiteUrl: ba?.website_url || '', instagramUrl: ba?.instagram_url || '', logo: ba?.logo_url || null
     };
   });
 }
@@ -312,6 +318,39 @@ function haversine(a,b){
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
 function walkTime(km){ return Math.round(km/4.3*60); }
+function resizeImage(file, maxW){
+  return new Promise((resolve)=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const scale = Math.min(1, maxW/img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width*scale; canvas.height = img.height*scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',0.8));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function dataURLtoBlob(dataUrl){
+  const [meta, b64] = dataUrl.split(',');
+  const mime = meta.match(/:(.*?);/)[1];
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], {type:mime});
+}
+async function uploadToStorage(path, dataUrl){
+  const blob = dataURLtoBlob(dataUrl);
+  const { error } = await sb.storage.from(IMAGE_BUCKET).upload(path, blob, {upsert:true, contentType:'image/jpeg'});
+  if(error){ showToast('이미지 업로드에 실패했어요'); console.error(error); return null; }
+  const { data } = sb.storage.from(IMAGE_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
 function slugify(str){ return 'a_' + str.trim().replace(/\s+/g,'_').replace(/[^\w\uac00-\ud7a3_]/g,'') + '_' + Date.now()%10000; }
 function initial(name){ return name.trim().charAt(0); }
 
@@ -377,9 +416,9 @@ function renderList(){
     const sel = !!viewerState.selected[b.id];
     const confirmed = isConfirmed(b);
     const card = document.createElement('div');
-    card.className = 'card' + (sel?' selected':'');
+    card.className = 'card' + (sel?' selected':'') + (openCardId===b.id ? ' open':'');
     card.id = 'card-'+b.id;
-    const logoHtml = initial(b.name);
+    const logoHtml = b.logo ? `<img src="${b.logo}">` : initial(b.name);
     const materials = b.materials || [];
 
     let detailHtml = '';
@@ -388,6 +427,11 @@ function renderList(){
       detailHtml = `
         <div class="field-label">소재 / 스톤 (선택하면 목록에 표시돼요)</div>
         <div class="chip-row">${chipsHtml}</div>
+        <div class="field-label">브랜드 로고</div>
+        <label class="logo-upload" id="logo-${b.id}">
+          ${b.logo ? `<img src="${b.logo}">` : '+'}
+          <input type="file" accept="image/*" onchange="handleLogo('${b.id}', this)">
+        </label>
         <div class="field-label">홈페이지 URL</div>
         <input class="price-input" id="website-input-${b.id}" placeholder="https://..." value="${b.websiteUrl||''}">
         <div class="field-label">인스타그램 URL</div>
@@ -436,7 +480,27 @@ async function ensureBrandAdmin(id){
   const { error } = await sb.from('brand_admin').upsert({brand_id:id}, {onConflict:'brand_id', ignoreDuplicates:true});
   if(error) console.error(error);
 }
-function toggleOpen(id){ document.getElementById('card-'+id).classList.toggle('open'); }
+async function handleLogo(id, input){
+  if(!input.files[0]) return;
+  const slot = document.getElementById('logo-'+id);
+  slot.classList.add('uploading');
+  const dataUrl = await resizeImage(input.files[0], 240);
+  const path = `logo/${id}-${Date.now()}.jpg`;
+  const url = await uploadToStorage(path, dataUrl);
+  if(url){
+    await ensureBrandAdmin(id);
+    const { error } = await sb.from('brand_admin').update({logo_url:url}).eq('brand_id', id);
+    if(error){ showToast('로고 저장에 실패했어요'); console.error(error); }
+    else {
+      const b = brands.find(x=>x.id===id);
+      b.logo = url;
+      showToast('로고를 저장했어요');
+    }
+  }
+  slot.classList.remove('uploading');
+  renderList();
+}
+function toggleOpen(id){ openCardId = (openCardId===id ? null : id); document.getElementById('card-'+id).classList.toggle('open'); }
 function toggleSelect(id){ viewerState.selected[id] = !viewerState.selected[id]; saveViewerState(); renderAll(); }
 async function saveCard(id, ev){
   ev.stopPropagation();
