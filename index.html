@@ -60,6 +60,10 @@
   .add-shop-link.show{display:flex;}
 
   .list{padding:16px 4px 0;display:flex;flex-direction:column;gap:12px;}
+  .filter-bar{margin:14px 4px 0;display:flex;flex-direction:column;gap:10px;}
+  .sort-select{align-self:flex-start;font-size:12px;padding:9px 14px;border-radius:999px;background:var(--surface);color:var(--ink-soft);border:none;font-family:inherit;font-weight:500;cursor:pointer;}
+  .tag-filter-row{display:flex;flex-wrap:wrap;gap:7px;}
+  .tag-filter-row .chip{background:var(--surface);}
   .loading-note{padding:26px;text-align:center;font-size:12.5px;color:var(--ink-faint);}
   .card{background:var(--surface);border-radius:20px;padding:16px;position:relative;}
   .card.selected{background:var(--accent-soft);}
@@ -181,6 +185,15 @@
     </div>
   </div>
 
+  <div class="filter-bar" id="filter-bar">
+    <select class="sort-select" id="sort-select" onchange="setSortBy(this.value)">
+      <option value="default">기본순</option>
+      <option value="name">이름순</option>
+      <option value="located">위치 확인 우선</option>
+    </select>
+    <div class="tag-filter-row" id="tag-filter-row"></div>
+  </div>
+
   <div class="list" id="list"><div class="loading-note">불러오는 중...</div></div>
 
   <div class="section-title">
@@ -234,13 +247,13 @@ let isAdmin = false;
 let openCardId = null;
 let areas = [];
 let brands = [];
-let viewerState = { selected:{}, manualOrder:{} };
+let viewerState = { selected:{}, manualOrder:{}, sortBy:'default', filterTags:[] };
 let activeArea = 'jongno';
 let map, markersLayer;
 let placingId = null;
 
 function loadViewerState(){
-  try{ const raw = localStorage.getItem('wb-viewer-state'); if(raw) viewerState = Object.assign({selected:{},manualOrder:{}}, JSON.parse(raw)); }catch(e){}
+  try{ const raw = localStorage.getItem('wb-viewer-state'); if(raw) viewerState = Object.assign({selected:{},manualOrder:{},sortBy:'default',filterTags:[]}, JSON.parse(raw)); }catch(e){}
 }
 function saveViewerState(){
   try{ localStorage.setItem('wb-viewer-state', JSON.stringify(viewerState)); }catch(e){}
@@ -408,10 +421,43 @@ async function removeBrand(id, ev){
   renderAll();
 }
 
+function renderFilterBar(){
+  const row = document.getElementById('tag-filter-row');
+  const usedTags = [...new Set(brands.filter(b=>b.area===activeArea).flatMap(b=>b.materials||[]))];
+  const tagsToShow = TAG_OPTIONS.filter(t=>usedTags.includes(t));
+  row.innerHTML = tagsToShow.map(tag=>`<button type="button" class="chip ${viewerState.filterTags.includes(tag)?'on':''}" onclick="toggleFilterTag('${tag}')">${tag}</button>`).join('');
+  document.getElementById('sort-select').value = viewerState.sortBy;
+}
+function toggleFilterTag(tag){
+  const idx = viewerState.filterTags.indexOf(tag);
+  if(idx>-1) viewerState.filterTags.splice(idx,1);
+  else viewerState.filterTags.push(tag);
+  saveViewerState();
+  renderAll();
+}
+function setSortBy(val){
+  viewerState.sortBy = val;
+  saveViewerState();
+  renderList();
+}
 function renderList(){
   const list = document.getElementById('list');
   list.innerHTML = '';
-  const areaBrands = brands.filter(b=>b.area===activeArea);
+  renderFilterBar();
+  let areaBrands = brands.filter(b=>b.area===activeArea);
+  if(viewerState.filterTags.length){
+    areaBrands = areaBrands.filter(b=>(b.materials||[]).some(m=>viewerState.filterTags.includes(m)));
+  }
+  if(viewerState.sortBy==='name'){
+    areaBrands = areaBrands.slice().sort((a,c)=>a.name.localeCompare(c.name,'ko'));
+  } else if(viewerState.sortBy==='located'){
+    areaBrands = areaBrands.slice().sort((a,c)=>(isConfirmed(c)?1:0)-(isConfirmed(a)?1:0));
+  }
+  if(!areaBrands.length){
+    list.innerHTML = '<div class="loading-note">조건에 맞는 샵이 없어요.</div>';
+    updateCounts();
+    return;
+  }
   areaBrands.forEach((b)=>{
     const sel = !!viewerState.selected[b.id];
     const confirmed = isConfirmed(b);
