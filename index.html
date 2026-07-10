@@ -83,11 +83,9 @@
   .price-input{width:100%;border:none;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;background:var(--surface-soft);color:var(--ink);margin-bottom:14px;}
   .price-input:focus{outline:2px solid var(--accent-soft);}
   .readonly-text{font-size:13px;color:var(--ink-soft);margin-bottom:14px;line-height:1.6;}
-  .imgrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;}
-  .imgslot{width:60px;height:60px;flex-shrink:0;border-radius:12px;background:var(--surface-soft);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-faint);cursor:pointer;overflow:hidden;position:relative;}
-  .imgslot img{width:100%;height:100%;object-fit:cover;}
-  .imgslot input{display:none;}
-  .imgslot.uploading{opacity:.4;}
+  .link-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .link-btn{font-size:11.5px;padding:9px 14px;border-radius:999px;background:var(--surface-soft);color:var(--ink);text-decoration:none;font-weight:500;display:inline-flex;align-items:center;gap:5px;}
+  .link-btn:hover{background:var(--accent-soft);color:var(--accent);}
   .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
   .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
   .chip{font-size:11.5px;padding:7px 13px;border-radius:999px;background:var(--surface-soft);color:var(--ink-soft);cursor:pointer;font-family:inherit;border:none;font-weight:500;}
@@ -220,7 +218,6 @@ const ADMIN_CODE = '0709';
 const SUPABASE_URL = 'https://cybrpntkywehiontyjsk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5YnJwbnRreXdlaGlvbnR5anNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTg4MDYsImV4cCI6MjA5OTE3NDgwNn0._fCurd5HBRgNDvK4_NS4btyzL6zDajVumPW_ISz8tPY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const IMAGE_BUCKET = 'brand-images';
 const TAG_OPTIONS = ['실버','14K','18K','24K','큐빅','모사나이트','지르코니아','랩다이아몬드','천연다이아'];
 const AREA_GUIDE = {
   jongno: '종로: 합리적인 가격대, 예물상가 밀집, 커스텀 세공 강점',
@@ -256,19 +253,18 @@ async function loadData(){
 
   const { data: brandData, error: brandErr } = await sb
     .from('brands')
-    .select('*, brand_admin(*), brand_images(id, url, sort_order)')
+    .select('*, brand_admin(*)')
     .eq('removed', false)
     .order('created_at');
   if(brandErr){ showToast('샵 정보를 불러오지 못했어요'); console.error(brandErr); }
 
   brands = (brandData||[]).map(b=>{
     const ba = Array.isArray(b.brand_admin) ? b.brand_admin[0] : b.brand_admin;
-    const imgs = (b.brand_images||[]).slice().sort((x,y)=>(x.sort_order||0)-(y.sort_order||0));
     return {
       id:b.id, name:b.name, area:b.area_id, address:b.address,
       lat:b.lat, lng:b.lng, nameUnsure:b.name_unsure, publicPrice:b.public_price,
-      price: ba?.price || '', note: ba?.note || '', materials: ba?.materials || [], logo: ba?.logo_url || null,
-      images: imgs
+      price: ba?.price || '', note: ba?.note || '', materials: ba?.materials || [],
+      websiteUrl: ba?.website_url || '', instagramUrl: ba?.instagram_url || ''
     };
   });
 }
@@ -316,39 +312,6 @@ function haversine(a,b){
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
 function walkTime(km){ return Math.round(km/4.3*60); }
-function resizeImage(file, maxW){
-  return new Promise((resolve)=>{
-    const reader = new FileReader();
-    reader.onload = e=>{
-      const img = new Image();
-      img.onload = ()=>{
-        const scale = Math.min(1, maxW/img.width);
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width*scale; canvas.height = img.height*scale;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img,0,0,canvas.width,canvas.height);
-        resolve(canvas.toDataURL('image/jpeg',0.72));
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-function dataURLtoBlob(dataUrl){
-  const [meta, b64] = dataUrl.split(',');
-  const mime = meta.match(/:(.*?);/)[1];
-  const bin = atob(b64);
-  const arr = new Uint8Array(bin.length);
-  for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
-  return new Blob([arr], {type:mime});
-}
-async function uploadToStorage(path, dataUrl){
-  const blob = dataURLtoBlob(dataUrl);
-  const { error } = await sb.storage.from(IMAGE_BUCKET).upload(path, blob, {upsert:true, contentType:'image/jpeg'});
-  if(error){ showToast('이미지 업로드에 실패했어요'); console.error(error); return null; }
-  const { data } = sb.storage.from(IMAGE_BUCKET).getPublicUrl(path);
-  return data.publicUrl;
-}
 function slugify(str){ return 'a_' + str.trim().replace(/\s+/g,'_').replace(/[^\w\uac00-\ud7a3_]/g,'') + '_' + Date.now()%10000; }
 function initial(name){ return name.trim().charAt(0); }
 
@@ -416,7 +379,7 @@ function renderList(){
     const card = document.createElement('div');
     card.className = 'card' + (sel?' selected':'');
     card.id = 'card-'+b.id;
-    const logoHtml = b.logo ? `<img src="${b.logo}">` : initial(b.name);
+    const logoHtml = initial(b.name);
     const materials = b.materials || [];
 
     let detailHtml = '';
@@ -425,15 +388,10 @@ function renderList(){
       detailHtml = `
         <div class="field-label">소재 / 스톤 (선택하면 목록에 표시돼요)</div>
         <div class="chip-row">${chipsHtml}</div>
-        <div class="field-label">로고</div>
-        <div class="imgrow">
-          <label class="imgslot" id="logo-${b.id}">
-            ${b.logo ? `<img src="${b.logo}">` : '+'}
-            <input type="file" accept="image/*" onchange="handleLogo('${b.id}', this)">
-          </label>
-        </div>
-        <div class="field-label">대표 디자인 (참고 이미지, 최대 5장)</div>
-        <div class="imgrow" id="designs-${b.id}"></div>
+        <div class="field-label">홈페이지 URL</div>
+        <input class="price-input" id="website-input-${b.id}" placeholder="https://..." value="${b.websiteUrl||''}">
+        <div class="field-label">인스타그램 URL</div>
+        <input class="price-input" id="instagram-input-${b.id}" placeholder="https://instagram.com/..." value="${b.instagramUrl||''}">
         <div class="field-label">확인한 가격대</div>
         <input class="price-input" id="price-input-${b.id}" placeholder="예: 커플링 2개 합 180만원대" value="${b.price||''}">
         <div class="field-label">메모</div>
@@ -446,11 +404,11 @@ function renderList(){
         <div class="admin-status" style="margin-top:10px;font-size:10px;color:${confirmed?'var(--ink-faint)':'var(--accent)'};">${confirmed?'✓ 위치 확인됨 (지도에 표시돼요)':'⚠ 위치 미지정 — 지도에 표시되지 않아요'}</div>
       `;
     } else {
-      const hasImgs = b.logo || (b.images && b.images.length);
+      const links = [];
+      if(b.websiteUrl) links.push(`<a class="link-btn" href="${b.websiteUrl}" target="_blank" rel="noopener">홈페이지 ↗</a>`);
+      if(b.instagramUrl) links.push(`<a class="link-btn" href="${b.instagramUrl}" target="_blank" rel="noopener">인스타그램 ↗</a>`);
       detailHtml = `
-        ${hasImgs ? `<div class="field-label">대표 이미지</div><div class="imgrow">${
-          (b.images||[]).map(img=>`<div class="imgslot"><img src="${img.url}"></div>`).join('')
-        }</div>` : ''}
+        ${links.length ? `<div class="link-row">${links.join('')}</div>` : ''}
         <div class="field-label">가격대</div>
         <div class="readonly-text">${b.price ? b.price : (b.publicPrice ? b.publicPrice+' (공개가)' : '등록된 정보가 없어요')}</div>
         ${b.note ? `<div class="field-label">메모</div><div class="readonly-text">${b.note}</div>` : ''}
@@ -471,72 +429,12 @@ function renderList(){
       <div class="card-detail">${detailHtml}</div>
     `;
     list.appendChild(card);
-    if(isAdmin) renderDesignSlots(b.id);
   });
   updateCounts();
-}
-function renderDesignSlots(id){
-  const row = document.getElementById('designs-'+id);
-  if(!row) return;
-  const b = brands.find(x=>x.id===id);
-  const imgs = b.images || [];
-  row.innerHTML = '';
-  for(let i=0;i<5;i++){
-    const slot = document.createElement('label');
-    slot.className = 'imgslot';
-    if(imgs[i]){
-      slot.innerHTML = `<img src="${imgs[i].url}">`;
-      slot.onclick = (e)=>{ e.preventDefault(); removeDesign(id, imgs[i].id); };
-    } else {
-      slot.innerHTML = `+<input type="file" accept="image/*">`;
-      slot.querySelector('input').onchange = function(){ handleDesign(id, i, this, slot); };
-    }
-    row.appendChild(slot);
-  }
 }
 async function ensureBrandAdmin(id){
   const { error } = await sb.from('brand_admin').upsert({brand_id:id}, {onConflict:'brand_id', ignoreDuplicates:true});
   if(error) console.error(error);
-}
-async function handleLogo(id, input){
-  if(!input.files[0]) return;
-  const slot = document.getElementById('logo-'+id);
-  slot.classList.add('uploading');
-  const dataUrl = await resizeImage(input.files[0], 200);
-  const path = `logo/${id}-${Date.now()}.jpg`;
-  const url = await uploadToStorage(path, dataUrl);
-  if(url){
-    await ensureBrandAdmin(id);
-    const { error } = await sb.from('brand_admin').update({logo_url:url}).eq('brand_id', id);
-    if(error){ showToast('로고 저장에 실패했어요'); console.error(error); }
-    else { const b = brands.find(x=>x.id===id); b.logo = url; }
-  }
-  slot.classList.remove('uploading');
-  renderList();
-}
-async function handleDesign(id, idx, input, slotEl){
-  if(!input.files[0]) return;
-  slotEl.classList.add('uploading');
-  const dataUrl = await resizeImage(input.files[0], 480);
-  const path = `design/${id}-${idx}-${Date.now()}.jpg`;
-  const url = await uploadToStorage(path, dataUrl);
-  if(url){
-    const { data, error } = await sb.from('brand_images').insert({brand_id:id, url, sort_order:idx}).select().single();
-    if(error){ showToast('이미지 저장에 실패했어요'); console.error(error); }
-    else {
-      const b = brands.find(x=>x.id===id);
-      b.images = b.images || [];
-      b.images.push(data);
-    }
-  }
-  renderDesignSlots(id);
-}
-async function removeDesign(id, imgId){
-  const { error } = await sb.from('brand_images').delete().eq('id', imgId);
-  if(error){ showToast('삭제에 실패했어요'); console.error(error); return; }
-  const b = brands.find(x=>x.id===id);
-  b.images = (b.images||[]).filter(img=>img.id!==imgId);
-  renderDesignSlots(id);
 }
 function toggleOpen(id){ document.getElementById('card-'+id).classList.toggle('open'); }
 function toggleSelect(id){ viewerState.selected[id] = !viewerState.selected[id]; saveViewerState(); renderAll(); }
@@ -544,12 +442,14 @@ async function saveCard(id, ev){
   ev.stopPropagation();
   const priceVal = document.getElementById('price-input-'+id).value;
   const noteVal = document.getElementById('note-input-'+id).value;
+  const websiteVal = document.getElementById('website-input-'+id).value.trim();
+  const instagramVal = document.getElementById('instagram-input-'+id).value.trim();
   await ensureBrandAdmin(id);
-  const { error } = await sb.from('brand_admin').update({price:priceVal, note:noteVal}).eq('brand_id', id);
+  const { error } = await sb.from('brand_admin').update({price:priceVal, note:noteVal, website_url:websiteVal||null, instagram_url:instagramVal||null}).eq('brand_id', id);
   const btn = document.getElementById('save-btn-'+id);
   if(error){ showToast('저장에 실패했어요'); console.error(error); return; }
   const b = brands.find(x=>x.id===id);
-  b.price = priceVal; b.note = noteVal;
+  b.price = priceVal; b.note = noteVal; b.websiteUrl = websiteVal; b.instagramUrl = instagramVal;
   const original = btn.textContent;
   btn.textContent = '저장됨 ✓';
   btn.classList.add('saved');
