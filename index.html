@@ -28,47 +28,29 @@
   .hero{background:var(--surface);border-radius:28px;padding:36px 28px 30px;}
   .hero-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
   .eyebrow{font-size:10.5px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;font-weight:600;}
-  .admin-link{font-size:10.5px;letter-spacing:.1em;color:var(--ink-faint);cursor:pointer;font-weight:600;padding:6px 12px;border:1px solid var(--line);border-radius:999px;}
-  .admin-link.on{color:var(--accent);border-color:var(--accent);}
   .hero h1{font-size:27px;line-height:1.4;margin:0 0 12px;font-weight:600;}
   .hero p{margin:0;color:var(--ink-soft);font-size:13.5px;line-height:1.6;}
-  .mode-banner{margin-top:18px;padding:10px 14px;background:var(--accent);color:#fff;font-size:11.5px;font-weight:600;letter-spacing:.02em;border-radius:12px;display:none;}
-  .mode-banner.show{display:block;}
 
   .tabs{display:flex;gap:8px;padding:22px 4px 0;overflow-x:auto;scrollbar-width:none;}
   .tabs::-webkit-scrollbar{display:none;}
   .tab{flex-shrink:0;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:500;background:var(--surface);cursor:pointer;color:var(--ink-soft);white-space:nowrap;border:1px solid transparent;}
   .tab .n{opacity:.6;margin-left:2px;font-variant-numeric:tabular-nums;}
   .tab.active{background:var(--ink);color:#fff;}
-  .tab-add{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--surface);color:var(--ink-faint);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
-  .tab-add:hover{color:var(--accent);}
-
-  .inline-form{margin:14px 4px 0;padding:20px;border-radius:20px;background:var(--surface);display:none;}
-  .inline-form.show{display:block;}
-  .inline-form .field-label{font-size:10.5px;letter-spacing:.1em;color:var(--ink-faint);margin-bottom:6px;text-transform:uppercase;font-weight:600;}
-  .inline-form input{width:100%;background:var(--surface-soft);border:none;border-radius:10px;color:var(--ink);font-size:14px;padding:11px 12px;font-family:inherit;margin-bottom:12px;}
-  .inline-form input:focus{outline:2px solid var(--accent-soft);}
-  .form-actions{display:flex;gap:8px;justify-content:flex-end;}
-  .btn-ghost{background:transparent;border:none;color:var(--ink-soft);padding:10px 16px;border-radius:999px;font-size:12.5px;cursor:pointer;font-family:inherit;font-weight:500;}
-  .btn-ink{background:var(--ink);border:none;color:#fff;padding:10px 18px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
-  .btn-ink:disabled{opacity:.5;cursor:default;}
 
   .price-guide{margin:14px 4px 0;padding:16px 18px;border-radius:18px;font-size:12px;color:var(--ink-soft);line-height:1.75;background:var(--accent-soft);}
   .price-guide b{color:var(--accent);font-weight:600;}
 
-  .add-shop-link{margin:14px 4px 0;display:none;align-items:center;justify-content:center;gap:7px;font-size:12.5px;color:var(--ink);cursor:pointer;font-weight:600;padding:12px;border-radius:999px;border:1px dashed var(--ink-faint);}
-  .add-shop-link.show{display:flex;}
-
-  .list{padding:16px 4px 0;display:flex;flex-direction:column;gap:12px;}
   .filter-bar{margin:14px 4px 0;display:flex;flex-direction:column;gap:10px;}
   .sort-select{align-self:flex-start;font-size:12px;padding:9px 14px;border-radius:999px;background:var(--surface);color:var(--ink-soft);border:none;font-family:inherit;font-weight:500;cursor:pointer;}
   .tag-filter-row{display:flex;flex-wrap:wrap;gap:7px;}
-  .tag-filter-row .chip{background:var(--surface);}
+  .chip{font-size:11.5px;padding:7px 13px;border-radius:999px;background:var(--surface);color:var(--ink-soft);cursor:pointer;font-family:inherit;border:none;font-weight:500;}
+  .chip.on{background:var(--ink);color:#fff;}
+
+  .list{padding:16px 4px 0;display:flex;flex-direction:column;gap:12px;}
   .loading-note{padding:26px;text-align:center;font-size:12.5px;color:var(--ink-faint);}
   .card{background:var(--surface);border-radius:20px;padding:16px;position:relative;}
   .card.selected{background:var(--accent-soft);}
   .card-top{display:flex;gap:14px;align-items:center;cursor:pointer;}
-  .logo img{width:100%;height:100%;object-fit:cover;}
   .card-info{flex:1;min-width:0;}
   .card-info h3{margin:0;font-size:15.5px;font-weight:600;color:var(--ink);}
   .tags-inline{font-size:11px;color:var(--accent);margin-top:3px;font-weight:500;}
@@ -76,29 +58,14 @@
   .name-unsure{font-size:10px;color:var(--accent);margin-left:5px;font-weight:500;}
   .check{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--ink-faint);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;}
   .card.selected .check{background:var(--ink);border-color:var(--ink);}
-  .del-btn{position:absolute;top:14px;right:14px;width:24px;height:24px;border-radius:50%;border:none;background:var(--surface-soft);color:var(--ink-faint);font-size:14px;cursor:pointer;display:none;}
-  .del-btn.show{display:block;}
-  .del-btn:hover{color:var(--accent);}
 
   .card-detail{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);}
   .card.open .card-detail{display:block;}
   .field-label{font-size:10.5px;letter-spacing:.1em;color:var(--ink-faint);margin-bottom:6px;text-transform:uppercase;font-weight:600;}
-  .price-input{width:100%;border:none;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;background:var(--surface-soft);color:var(--ink);margin-bottom:14px;}
-  .price-input:focus{outline:2px solid var(--accent-soft);}
   .readonly-text{font-size:13px;color:var(--ink-soft);margin-bottom:14px;line-height:1.6;}
   .link-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   .link-btn{font-size:11.5px;padding:9px 14px;border-radius:999px;background:var(--surface-soft);color:var(--ink);text-decoration:none;font-weight:500;display:inline-flex;align-items:center;gap:5px;}
   .link-btn:hover{background:var(--accent-soft);color:var(--accent);}
-  .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
-  .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
-  .chip{font-size:11.5px;padding:7px 13px;border-radius:999px;background:var(--surface-soft);color:var(--ink-soft);cursor:pointer;font-family:inherit;border:none;font-weight:500;}
-  .chip.on{background:var(--ink);color:#fff;}
-  .mini-btn{font-size:11px;padding:9px 14px;border-radius:999px;border:none;background:var(--surface-soft);color:var(--ink-soft);cursor:pointer;font-family:inherit;font-weight:500;}
-  .mini-btn.locate{color:var(--accent);background:var(--accent-soft);}
-  .mini-btn.save-btn{color:#fff;background:var(--ink);}
-  .mini-btn.save-btn.saved{background:var(--accent);}
-  .locate-hint{font-size:11px;color:var(--accent);margin-top:8px;display:none;}
-  .locate-hint.show{display:block;}
 
   .section-title{padding:36px 4px 4px;}
   .section-title h2{font-size:19px;margin:0 0 5px;font-weight:600;}
@@ -128,16 +95,6 @@
   .floatbar .count span{color:#fff;font-weight:600;}
   .floatbar button{background:#fff;color:var(--ink);border:none;padding:10px 18px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;}
 
-  .modal-overlay{position:fixed;inset:0;background:rgba(43,38,32,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:24px;}
-  .modal-overlay.show{display:flex;}
-  .modal-box{background:var(--bg);border-radius:24px;max-width:320px;width:100%;padding:28px;}
-  .modal-box h3{margin:0 0 6px;font-size:16px;font-weight:600;}
-  .modal-box p{margin:0 0 18px;font-size:12px;color:var(--ink-soft);line-height:1.6;}
-  .modal-box input{width:100%;background:var(--surface);border:none;border-radius:12px;padding:12px;font-size:14px;font-family:inherit;margin-bottom:10px;text-align:center;letter-spacing:.1em;}
-  .modal-box input:focus{outline:2px solid var(--accent-soft);}
-  .modal-error{font-size:11.5px;color:var(--accent);margin-bottom:10px;display:none;}
-  .modal-error.show{display:block;}
-  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
   .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:12px;z-index:200;display:none;}
   .toast.show{display:block;}
 </style>
@@ -147,38 +104,13 @@
   <div class="hero">
     <div class="hero-top">
       <div class="eyebrow">Seoul · Wedding Band Guide</div>
-      <div class="admin-link" id="admin-link" onclick="toggleAdmin()">관리자</div>
     </div>
     <h1>웨딩밴드 투어 가이드</h1>
     <p>종로, 청담, 홍대 등의 웨딩반지 샵을 둘러보고 지도 위치와 최적 동선을 확인해보세요.</p>
-    <div class="mode-banner" id="mode-banner">관리자 모드 — 여기서 수정한 내용은 이 링크를 보는 모든 사람에게 공개돼요.</div>
   </div>
 
   <div class="tabs" id="tabs"></div>
-
-  <div class="inline-form" id="area-form">
-    <div class="field-label">새 지역 이름</div>
-    <input type="text" id="area-name-input" placeholder="예: 강남, 성수 ...">
-    <div class="form-actions">
-      <button class="btn-ghost" onclick="closeAreaForm()">취소</button>
-      <button class="btn-ink" onclick="submitArea()">추가</button>
-    </div>
-  </div>
-
   <div class="price-guide" id="price-guide"></div>
-
-  <div class="add-shop-link" id="add-shop-link" onclick="openShopForm()">＋ 새로운 샵 추가</div>
-
-  <div class="inline-form" id="shop-form">
-    <div class="field-label">샵 이름</div>
-    <input type="text" id="shop-name-input" placeholder="예: 오헤르츠 주얼리">
-    <div class="field-label">주소 (선택)</div>
-    <input type="text" id="shop-addr-input" placeholder="대략적인 위치나 주소">
-    <div class="form-actions">
-      <button class="btn-ghost" onclick="closeShopForm()">취소</button>
-      <button class="btn-ink" onclick="submitShop()">추가</button>
-    </div>
-  </div>
 
   <div class="filter-bar" id="filter-bar">
     <select class="sort-select" id="sort-select" onchange="setSortBy(this.value)">
@@ -210,23 +142,9 @@
   <button onclick="document.getElementById('route-title').scrollIntoView({behavior:'smooth'})">동선 보기</button>
 </div>
 
-<div class="modal-overlay" id="admin-modal">
-  <div class="modal-box">
-    <h3>관리자 모드</h3>
-    <p>코드를 입력하면 샵 정보를 수정할 수 있어요.</p>
-    <input type="password" id="admin-code-input" placeholder="코드" inputmode="numeric">
-    <div class="modal-error" id="admin-error">코드가 맞지 않아요.</div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeAdminModal()">취소</button>
-      <button class="btn-ink" onclick="submitAdminCode()">확인</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-const ADMIN_CODE = '0709';
 const SUPABASE_URL = 'https://cybrpntkywehiontyjsk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5YnJwbnRreXdlaGlvbnR5anNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTg4MDYsImV4cCI6MjA5OTE3NDgwNn0._fCurd5HBRgNDvK4_NS4btyzL6zDajVumPW_ISz8tPY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -237,14 +155,12 @@ const AREA_GUIDE = {
   hongdae: '홍대: 핸드메이드 공방 체험형, 캐주얼한 분위기와 가격대'
 };
 
-let isAdmin = false;
-let openCardId = null;
 let areas = [];
 let brands = [];
 let viewerState = { selected:{}, manualOrder:{}, sortBy:'default', filterTags:[] };
 let activeArea = 'jongno';
+let openCardId = null;
 let map, markersLayer;
-let placingId = null;
 
 function loadViewerState(){
   try{ const raw = localStorage.getItem('wb-viewer-state'); if(raw) viewerState = Object.assign({selected:{},manualOrder:{},sortBy:'default',filterTags:[]}, JSON.parse(raw)); }catch(e){}
@@ -263,6 +179,7 @@ async function loadData(){
   const { data: areaData, error: areaErr } = await sb.from('areas').select('*').order('sort_order');
   if(areaErr){ showToast('지역 정보를 불러오지 못했어요'); console.error(areaErr); }
   areas = areaData || [];
+  if(areas.length && !areas.some(a=>a.id===activeArea)) activeArea = areas[0].id;
 
   const { data: brandData, error: brandErr } = await sb
     .from('brands')
@@ -282,39 +199,6 @@ async function loadData(){
   });
 }
 
-function toggleAdmin(){
-  if(isAdmin){
-    isAdmin = false;
-    document.getElementById('admin-link').classList.remove('on');
-    document.getElementById('mode-banner').classList.remove('show');
-    document.getElementById('add-shop-link').classList.remove('show');
-    renderAll();
-  } else {
-    openAdminModal();
-  }
-}
-function openAdminModal(){
-  document.getElementById('admin-error').classList.remove('show');
-  document.getElementById('admin-code-input').value = '';
-  document.getElementById('admin-modal').classList.add('show');
-  setTimeout(()=>document.getElementById('admin-code-input').focus(), 50);
-}
-function closeAdminModal(){ document.getElementById('admin-modal').classList.remove('show'); }
-function submitAdminCode(){
-  const code = document.getElementById('admin-code-input').value;
-  if(code === ADMIN_CODE){
-    isAdmin = true;
-    closeAdminModal();
-    document.getElementById('admin-link').classList.add('on');
-    document.getElementById('mode-banner').classList.add('show');
-    document.getElementById('add-shop-link').classList.add('show');
-    renderAll();
-  } else {
-    document.getElementById('admin-error').classList.add('show');
-  }
-}
-document.getElementById('admin-code-input')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') submitAdminCode(); });
-
 function areaLabel(id){ const a=areas.find(x=>x.id===id); return a?a.label:id; }
 function getCoords(b){ if(b.lat!=null && b.lng!=null) return {lat:b.lat, lng:b.lng}; return null; }
 function isConfirmed(b){ return !!getCoords(b); }
@@ -325,8 +209,6 @@ function haversine(a,b){
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
 function walkTime(km){ return Math.round(km/4.3*60); }
-function slugify(str){ return 'a_' + str.trim().replace(/\s+/g,'_').replace(/[^\w\uac00-\ud7a3_]/g,'') + '_' + Date.now()%10000; }
-function initial(name){ return name.trim().charAt(0); }
 
 function renderTabs(){
   const tabs = document.getElementById('tabs');
@@ -336,50 +218,9 @@ function renderTabs(){
     div.className = 'tab' + (a.id===activeArea ? ' active':'');
     const c = brands.filter(b=>b.area===a.id && viewerState.selected[b.id]).length;
     div.innerHTML = `${a.label} ${c>0?`<span class="n">(${c})</span>`:''}`;
-    div.onclick = ()=>{ activeArea = a.id; closeAreaForm(); closeShopForm(); renderAll(); };
+    div.onclick = ()=>{ activeArea = a.id; renderAll(); };
     tabs.appendChild(div);
   });
-  if(isAdmin){
-    const addBtn = document.createElement('div');
-    addBtn.className = 'tab-add';
-    addBtn.textContent = '＋';
-    addBtn.onclick = openAreaForm;
-    tabs.appendChild(addBtn);
-  }
-}
-function openAreaForm(){ document.getElementById('area-form').classList.add('show'); document.getElementById('area-name-input').focus(); }
-function closeAreaForm(){ document.getElementById('area-form').classList.remove('show'); document.getElementById('area-name-input').value=''; }
-async function submitArea(){
-  const val = document.getElementById('area-name-input').value.trim();
-  if(!val) return;
-  const id = slugify(val);
-  const { error } = await sb.from('areas').insert({id, label:val, sort_order: areas.length+1});
-  if(error){ showToast('지역 추가에 실패했어요'); console.error(error); return; }
-  await loadData();
-  activeArea = id;
-  closeAreaForm();
-  renderAll();
-}
-function openShopForm(){ document.getElementById('shop-form').classList.add('show'); document.getElementById('shop-name-input').focus(); }
-function closeShopForm(){ document.getElementById('shop-form').classList.remove('show'); document.getElementById('shop-name-input').value=''; document.getElementById('shop-addr-input').value=''; }
-async function submitShop(){
-  const name = document.getElementById('shop-name-input').value.trim();
-  const addr = document.getElementById('shop-addr-input').value.trim();
-  if(!name) return;
-  const id = slugify(name);
-  const { error } = await sb.from('brands').insert({id, name, area_id:activeArea, address:addr||null});
-  if(error){ showToast('샵 추가에 실패했어요'); console.error(error); return; }
-  await loadData();
-  closeShopForm();
-  renderAll();
-}
-async function removeBrand(id, ev){
-  ev.stopPropagation();
-  if(!isAdmin) return;
-  const { error } = await sb.from('brands').update({removed:true}).eq('id', id);
-  if(error){ showToast('삭제에 실패했어요'); console.error(error); return; }
-  await loadData();
-  renderAll();
 }
 
 function renderFilterBar(){
@@ -401,6 +242,7 @@ function setSortBy(val){
   saveViewerState();
   renderList();
 }
+
 function renderList(){
   const list = document.getElementById('list');
   list.innerHTML = '';
@@ -421,59 +263,29 @@ function renderList(){
   }
   areaBrands.forEach((b)=>{
     const sel = !!viewerState.selected[b.id];
-    const confirmed = isConfirmed(b);
+    const materials = b.materials || [];
     const card = document.createElement('div');
     card.className = 'card' + (sel?' selected':'') + (openCardId===b.id ? ' open':'');
     card.id = 'card-'+b.id;
-    const materials = b.materials || [];
 
-    let detailHtml = '';
-    if(isAdmin){
-      const chipsHtml = TAG_OPTIONS.map(tag=>`<button type="button" class="chip ${materials.includes(tag)?'on':''}" onclick="toggleMaterial('${b.id}','${tag}', event)">${tag}</button>`).join('');
-      detailHtml = `
-        <div class="field-label">소재 / 스톤 (선택하면 목록에 표시돼요)</div>
-        <div class="chip-row">${chipsHtml}</div>
-        <div class="field-label">주소</div>
-        <input class="price-input" id="addr-input-${b.id}" placeholder="예: 서울 종로구 율곡로8길 21-1 1층" value="${b.address||''}">
-        <div class="btn-row" style="margin-bottom:14px;">
-          <button class="mini-btn locate" id="geocode-btn-${b.id}" onclick="geocodeAddress('${b.id}', event)">주소로 위치 찾기</button>
-          <button class="mini-btn locate" onclick="startPlacing('${b.id}')">${confirmed?'지도에서 직접 수정':'지도에서 직접 지정'}</button>
-        </div>
-        <div class="field-label">홈페이지 URL</div>
-        <input class="price-input" id="website-input-${b.id}" placeholder="https://..." value="${b.websiteUrl||''}">
-        <div class="field-label">인스타그램 URL</div>
-        <input class="price-input" id="instagram-input-${b.id}" placeholder="https://instagram.com/..." value="${b.instagramUrl||''}">
-        <div class="field-label">확인한 가격대</div>
-        <input class="price-input" id="price-input-${b.id}" placeholder="예: 커플링 2개 합 180만원대" value="${b.price||''}">
-        <div class="field-label">메모</div>
-        <input class="price-input" id="note-input-${b.id}" placeholder="느낀 점, 디자인 이름 등" value="${b.note||''}">
-        <div class="btn-row">
-          <button class="mini-btn save-btn" id="save-btn-${b.id}" onclick="saveCard('${b.id}', event)">저장</button>
-        </div>
-        <div class="locate-hint" id="hint-${b.id}">아래 지도를 눌러 이 샵의 위치를 지정해주세요.</div>
-        <div class="admin-status" style="margin-top:10px;font-size:10px;color:${confirmed?'var(--ink-faint)':'var(--accent)'};">${confirmed?'✓ 위치 확인됨 (지도에 표시돼요)':'⚠ 위치 미지정 — 지도에 표시되지 않아요'}</div>
-      `;
-    } else {
-      const links = [];
-      if(b.websiteUrl) links.push(`<a class="link-btn" href="${b.websiteUrl}" target="_blank" rel="noopener">홈페이지 ↗</a>`);
-      if(b.instagramUrl) links.push(`<a class="link-btn" href="${b.instagramUrl}" target="_blank" rel="noopener">인스타그램 ↗</a>`);
-      detailHtml = `
-        ${links.length ? `<div class="link-row">${links.join('')}</div>` : ''}
-        <div class="field-label">가격대</div>
-        <div class="readonly-text">${b.price ? b.price : (b.publicPrice ? b.publicPrice+' (공개가)' : '등록된 정보가 없어요')}</div>
-        ${b.note ? `<div class="field-label">메모</div><div class="readonly-text">${b.note}</div>` : ''}
-      `;
-    }
+    const links = [];
+    if(b.websiteUrl) links.push(`<a class="link-btn" href="${b.websiteUrl}" target="_blank" rel="noopener">홈페이지 ↗</a>`);
+    if(b.instagramUrl) links.push(`<a class="link-btn" href="${b.instagramUrl}" target="_blank" rel="noopener">인스타그램 ↗</a>`);
+    const detailHtml = `
+      ${links.length ? `<div class="link-row">${links.join('')}</div>` : ''}
+      <div class="field-label">가격대</div>
+      <div class="readonly-text">${b.price ? b.price : (b.publicPrice ? b.publicPrice+' (공개가)' : '등록된 정보가 없어요')}</div>
+      ${b.note ? `<div class="field-label">메모</div><div class="readonly-text">${b.note}</div>` : ''}
+    `;
 
     card.innerHTML = `
-      <button class="del-btn ${isAdmin?'show':''}" onclick="removeBrand('${b.id}', event)">×</button>
       <div class="card-top" onclick="toggleOpen('${b.id}')">
         <div class="card-info">
           <h3>${b.name}${b.nameUnsure?'<span class="name-unsure">확인필요</span>':''}</h3>
           <div class="addr">${b.address || '주소 미확인'}</div>
           ${materials.length ? `<div class="tags-inline">${materials.join(' · ')}</div>` : ''}
         </div>
-        ${isAdmin ? '' : `<div class="check" onclick="event.stopPropagation();toggleSelect('${b.id}')">${sel?'✓':''}</div>`}
+        <div class="check" onclick="event.stopPropagation();toggleSelect('${b.id}')">${sel?'✓':''}</div>
       </div>
       <div class="card-detail">${detailHtml}</div>
     `;
@@ -481,100 +293,17 @@ function renderList(){
   });
   updateCounts();
 }
-async function ensureBrandAdmin(id){
-  const { error } = await sb.from('brand_admin').upsert({brand_id:id}, {onConflict:'brand_id', ignoreDuplicates:true});
-  if(error) console.error(error);
-}
 function toggleOpen(id){ openCardId = (openCardId===id ? null : id); document.getElementById('card-'+id).classList.toggle('open'); }
 function toggleSelect(id){ viewerState.selected[id] = !viewerState.selected[id]; saveViewerState(); renderAll(); }
-async function saveCard(id, ev){
-  ev.stopPropagation();
-  const priceVal = document.getElementById('price-input-'+id).value;
-  const noteVal = document.getElementById('note-input-'+id).value;
-  const websiteVal = document.getElementById('website-input-'+id).value.trim();
-  const instagramVal = document.getElementById('instagram-input-'+id).value.trim();
-  const addrVal = document.getElementById('addr-input-'+id).value.trim();
-  await ensureBrandAdmin(id);
-  const [{ error }, { error: addrError }] = await Promise.all([
-    sb.from('brand_admin').update({price:priceVal, note:noteVal, website_url:websiteVal||null, instagram_url:instagramVal||null}).eq('brand_id', id),
-    sb.from('brands').update({address:addrVal||null}).eq('id', id)
-  ]);
-  const btn = document.getElementById('save-btn-'+id);
-  if(error || addrError){ showToast('저장에 실패했어요'); console.error(error||addrError); return; }
-  const b = brands.find(x=>x.id===id);
-  b.price = priceVal; b.note = noteVal; b.websiteUrl = websiteVal; b.instagramUrl = instagramVal; b.address = addrVal;
-  const original = btn.textContent;
-  btn.textContent = '저장됨 ✓';
-  btn.classList.add('saved');
-  setTimeout(()=>{ btn.textContent = original; btn.classList.remove('saved'); }, 1500);
-}
-async function toggleMaterial(id, tag, ev){
-  ev.stopPropagation();
-  const b = brands.find(x=>x.id===id);
-  const cur = b.materials || [];
-  const idx = cur.indexOf(tag);
-  const next = idx>-1 ? cur.filter(t=>t!==tag) : [...cur, tag];
-  await ensureBrandAdmin(id);
-  const { error } = await sb.from('brand_admin').update({materials:next}).eq('brand_id', id);
-  if(error){ showToast('저장에 실패했어요'); console.error(error); return; }
-  b.materials = next;
-  renderList();
-}
-async function geocodeAddress(id, ev){
-  ev.stopPropagation();
-  const input = document.getElementById('addr-input-'+id);
-  const addr = input.value.trim();
-  if(!addr){ showToast('주소를 먼저 입력해주세요'); return; }
-  const btn = document.getElementById('geocode-btn-'+id);
-  const original = btn.textContent;
-  btn.textContent = '찾는 중...';
-  try{
-    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&q=' + encodeURIComponent(addr);
-    const res = await fetch(url, {headers:{'Accept-Language':'ko'}});
-    const results = await res.json();
-    if(!results.length){
-      showToast('주소를 찾지 못했어요. 조금 더 자세히 입력하거나 지도에서 직접 지정해주세요');
-      btn.textContent = original;
-      return;
-    }
-    const lat = parseFloat(results[0].lat), lng = parseFloat(results[0].lon);
-    const { error } = await sb.from('brands').update({lat, lng, address:addr}).eq('id', id);
-    if(error){ showToast('위치 저장에 실패했어요'); console.error(error); btn.textContent = original; return; }
-    const b = brands.find(x=>x.id===id);
-    b.lat = lat; b.lng = lng; b.address = addr;
-    showToast('위치를 찾았어요');
-    renderAll();
-  }catch(e){
-    console.error(e);
-    showToast('위치 검색 중 문제가 생겼어요');
-    btn.textContent = original;
-  }
-}
-function startPlacing(id){
-  placingId = id;
-  document.querySelectorAll('.locate-hint').forEach(h=>h.classList.remove('show'));
-  document.getElementById('hint-'+id).classList.add('show');
-  document.getElementById('map').scrollIntoView({behavior:'smooth', block:'center'});
-}
 function updateCounts(){
   const total = Object.values(viewerState.selected).filter(Boolean).length;
   document.getElementById('sel-count').textContent = total;
 }
+
 function initMap(){
   map = L.map('map', {zoomControl:true, attributionControl:false}).setView([37.566, 126.978], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {subdomains:['a','b','c']}).addTo(map);
   markersLayer = L.layerGroup().addTo(map);
-  map.on('click', async (e)=>{
-    if(!placingId || !isAdmin) return;
-    const id = placingId;
-    const { error } = await sb.from('brands').update({lat:e.latlng.lat, lng:e.latlng.lng}).eq('id', id);
-    if(error){ showToast('위치 저장에 실패했어요'); console.error(error); return; }
-    const b = brands.find(x=>x.id===id);
-    b.lat = e.latlng.lat; b.lng = e.latlng.lng;
-    document.getElementById('hint-'+id).classList.remove('show');
-    placingId = null;
-    renderAll();
-  });
 }
 function nearestNeighborRoute(points){
   if(points.length===0) return [];
