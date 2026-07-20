@@ -44,11 +44,16 @@
   .section-head h2{font-size:16px;margin:0 0 3px;font-weight:600;}
   .section-head p{margin:0;font-size:11.5px;color:var(--ink-faint);}
 
-  .area-row{background:var(--surface);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-  .area-row input{flex:1;border:none;background:transparent;font-size:14px;font-weight:600;color:var(--ink);font-family:inherit;padding:6px 4px;}
-  .area-row input:focus{outline:none;background:var(--surface-soft);border-radius:6px;}
+  .area-row{background:var(--surface);border-radius:14px;padding:12px 14px;margin-bottom:8px;}
+  .area-row-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .area-row input{min-width:100px;}
+  .area-row-controls input{flex:1;border:none;background:transparent;font-size:14px;font-weight:600;color:var(--ink);font-family:inherit;padding:6px 4px;}
+  .area-row-controls input:focus{outline:none;background:var(--surface-soft);border-radius:6px;}
+  .area-desc-input{width:100%;border:none;background:var(--surface-soft);border-radius:8px;font-size:12.5px;color:var(--ink-soft);font-family:inherit;padding:9px 10px;margin-top:8px;}
+  .area-desc-input:focus{outline:2px solid var(--accent-soft);}
   .icon-btn{width:26px;height:26px;border:none;background:var(--surface-soft);border-radius:7px;font-size:11px;cursor:pointer;color:var(--ink-soft);flex-shrink:0;}
   .icon-btn.danger:hover{color:var(--accent);}
+  .icon-btn.save{width:auto;padding:0 12px;white-space:nowrap;font-weight:600;}
   .icon-btn.save:hover{color:var(--accent);}
 
   .inline-form{margin:8px 4px 0;padding:16px;border-radius:14px;background:var(--surface);display:flex;gap:8px;}
@@ -221,11 +226,14 @@ function renderAreaList(){
     const row = document.createElement('div');
     row.className = 'area-row';
     row.innerHTML = `
-      <button class="icon-btn" ${i===0?'disabled style="opacity:.3"':''} onclick="moveArea(${i},-1)">↑</button>
-      <button class="icon-btn" ${i===areas.length-1?'disabled style="opacity:.3"':''} onclick="moveArea(${i},1)">↓</button>
-      <input type="text" id="area-name-${a.id}" value="${a.label}">
-      <button class="icon-btn save" onclick="renameArea('${a.id}')">저장</button>
-      <button class="icon-btn danger" onclick="deleteArea('${a.id}')">×</button>
+      <div class="area-row-controls">
+        <button class="icon-btn" ${i===0?'disabled style="opacity:.3"':''} onclick="moveArea(${i},-1)">↑</button>
+        <button class="icon-btn" ${i===areas.length-1?'disabled style="opacity:.3"':''} onclick="moveArea(${i},1)">↓</button>
+        <input type="text" id="area-name-${a.id}" value="${a.label}">
+        <button class="icon-btn save" onclick="renameArea('${a.id}')">저장</button>
+        <button class="icon-btn danger" onclick="deleteArea('${a.id}')">×</button>
+      </div>
+      <input type="text" class="area-desc-input" id="area-desc-${a.id}" placeholder="이 지역 한줄 설명 (예: 합리적인 가격대, 예물상가 밀집)" value="${a.description||''}">
     `;
     list.appendChild(row);
   });
@@ -249,11 +257,13 @@ async function moveArea(idx, dir){
 }
 async function renameArea(id){
   const val = document.getElementById('area-name-'+id).value.trim();
+  const descVal = document.getElementById('area-desc-'+id).value.trim();
   if(!val) return;
-  const { error } = await sb.from('areas').update({label:val}).eq('id', id);
-  if(error){ showToast('이름 변경에 실패했어요'); console.error(error); return; }
+  const { error } = await sb.from('areas').update({label:val, description:descVal||null}).eq('id', id);
+  if(error){ showToast('저장에 실패했어요'); console.error(error); return; }
   const a = areas.find(x=>x.id===id);
   a.label = val;
+  a.description = descVal;
   showToast('저장했어요');
   renderAreaTabs();
 }
