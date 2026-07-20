@@ -152,11 +152,6 @@ const SUPABASE_URL = 'https://cybrpntkywehiontyjsk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5YnJwbnRreXdlaGlvbnR5anNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTg4MDYsImV4cCI6MjA5OTE3NDgwNn0._fCurd5HBRgNDvK4_NS4btyzL6zDajVumPW_ISz8tPY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const TAG_OPTIONS = ['실버','14K','18K','24K','큐빅','모사나이트','지르코니아','랩다이아몬드','천연다이아'];
-const AREA_GUIDE = {
-  jongno: '종로: 합리적인 가격대, 예물상가 밀집, 커스텀 세공 강점',
-  cheongdam: '청담: 부티크 브랜드 위주, 상대적으로 프리미엄 가격대, 세련된 디자인',
-  hongdae: '홍대: 핸드메이드 공방 체험형, 캐주얼한 분위기와 가격대'
-};
 
 let areas = [];
 let brands = [];
@@ -418,8 +413,15 @@ function moveStop(area, idx, dir){
 }
 function renderAll(){
   renderTabs();
-  const guide = AREA_GUIDE[activeArea] || `${areaLabel(activeArea)} 지역의 샵들이에요.`;
-  document.getElementById('price-guide').innerHTML = `<b>시세 경향 (참고용)</b> · ${guide}`;
+  const currentArea = areas.find(a=>a.id===activeArea);
+  const guide = currentArea && currentArea.description;
+  const guideEl = document.getElementById('price-guide');
+  if(guide){
+    guideEl.style.display = '';
+    guideEl.innerHTML = `<b>시세 경향 (참고용)</b> · ${guide}`;
+  } else {
+    guideEl.style.display = 'none';
+  }
   renderList();
   renderMapAndRoutes();
 }
