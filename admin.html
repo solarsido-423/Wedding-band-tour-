@@ -105,7 +105,7 @@
   <div class="login-box">
     <h1>관리자 로그인</h1>
     <p>웨딩밴드 투어 가이드 관리 페이지예요.</p>
-    <input type="text" id="login-id" placeholder="아이디" autocomplete="username">
+    <input type="email" id="login-id" placeholder="이메일" autocomplete="username">
     <input type="password" id="login-pw" placeholder="비밀번호" autocomplete="current-password">
     <div class="login-error" id="login-error">아이디 또는 비밀번호가 맞지 않아요.</div>
     <button class="btn-ink" onclick="doLogin()">로그인</button>
@@ -150,8 +150,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'solarsido001';
 const SUPABASE_URL = 'https://cybrpntkywehiontyjsk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5YnJwbnRreXdlaGlvbnR5anNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTg4MDYsImV4cCI6MjA5OTE3NDgwNn0._fCurd5HBRgNDvK4_NS4btyzL6zDajVumPW_ISz8tPY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -169,19 +167,21 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
-function doLogin(){
-  const id = document.getElementById('login-id').value.trim();
+async function doLogin(){
+  const email = document.getElementById('login-id').value.trim();
   const pw = document.getElementById('login-pw').value;
-  if(id === ADMIN_USER && pw === ADMIN_PASS){
-    sessionStorage.setItem('wb-admin-session', '1');
-    showDashboard();
-  } else {
+  document.getElementById('login-error').classList.remove('show');
+  const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+  if(error){
+    document.getElementById('login-error').textContent = '이메일 또는 비밀번호가 맞지 않아요.';
     document.getElementById('login-error').classList.add('show');
+    return;
   }
+  showDashboard();
 }
 document.getElementById('login-pw').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
-function doLogout(){
-  sessionStorage.removeItem('wb-admin-session');
+async function doLogout(){
+  await sb.auth.signOut();
   location.reload();
 }
 function showDashboard(){
@@ -342,6 +342,12 @@ function renderShopList(){
         <div class="btn-row" style="margin-bottom:14px;">
           <button class="mini-btn locate" id="geocode-btn-${b.id}" onclick="geocodeAddress('${b.id}')">주소로 위치 찾기</button>
         </div>
+        <div class="field-label">위도 / 경도 (직접 입력 — 주소 찾기가 실패할 때만 사용하세요)</div>
+        <div class="btn-row" style="margin-bottom:14px;gap:8px;">
+          <input class="field-input" id="lat-input-${b.id}" placeholder="위도 (예: 37.5734935)" value="${b.lat!=null?b.lat:''}" style="margin-bottom:0;">
+          <input class="field-input" id="lng-input-${b.id}" placeholder="경도 (예: 126.9925268)" value="${b.lng!=null?b.lng:''}" style="margin-bottom:0;">
+          <button class="mini-btn locate" onclick="saveManualCoords('${b.id}')">좌표 저장</button>
+        </div>
         <div class="field-label">소재 / 스톤</div>
         <div class="chip-row">${chipsHtml}</div>
         <div class="field-label">홈페이지 URL</div>
@@ -374,6 +380,17 @@ async function toggleMaterial(id, tag){
   const { error } = await sb.from('brand_admin').update({materials:next}).eq('brand_id', id);
   if(error){ showToast('저장에 실패했어요'); console.error(error); return; }
   b.materials = next;
+  renderShopList();
+}
+async function saveManualCoords(id){
+  const latVal = parseFloat(document.getElementById('lat-input-'+id).value);
+  const lngVal = parseFloat(document.getElementById('lng-input-'+id).value);
+  if(isNaN(latVal) || isNaN(lngVal)){ showToast('위도/경도를 숫자로 입력해주세요'); return; }
+  const { error } = await sb.from('brands').update({lat:latVal, lng:lngVal}).eq('id', id);
+  if(error){ showToast('저장에 실패했어요'); console.error(error); return; }
+  const b = brands.find(x=>x.id===id);
+  b.lat = latVal; b.lng = lngVal;
+  showToast('좌표를 저장했어요');
   renderShopList();
 }
 async function geocodeAddress(id){
@@ -456,9 +473,12 @@ async function init(){
   renderShopList();
 }
 
-if(sessionStorage.getItem('wb-admin-session') === '1'){
-  showDashboard();
-}
+(async ()=>{
+  const { data } = await sb.auth.getSession();
+  if(data.session){
+    showDashboard();
+  }
+})();
 </script>
 </body>
 </html>
